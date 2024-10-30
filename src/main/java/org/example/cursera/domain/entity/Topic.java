@@ -23,6 +23,10 @@ public class Topic {
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
 
+    @OneToMany
+    @JoinColumn(name = "topic_id")
+    private List<MinioFile> files;
+
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL)
     private List<Test> tests;
 }

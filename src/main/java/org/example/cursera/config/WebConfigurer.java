@@ -3,6 +3,7 @@ package org.example.cursera.config;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import org.example.cursera.config.props.CorsConfigurationProperties;
+import org.example.cursera.config.props.CorsProp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -12,7 +13,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import org.example.cursera.config.props.CorsProp;
 
 /**
  * Configuration for web-related settings and filters.

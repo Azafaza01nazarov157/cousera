@@ -39,6 +39,12 @@ spring:
         transport:
           protocol: smtp
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+
 logging:
   level:
     root: INFO
@@ -55,3 +61,13 @@ application:
       token-validity-in-seconds-for-remember-me: 604800000
   cors:
     allowed-origins-base: "http://your-frontend-url.com"
+
+minio:
+  access:
+    key: minio
+  secret:
+    key: minio123
+  url: "http://localhost:9000"
+  file-size: 1073741824
+  bucket:
+    name: cousera

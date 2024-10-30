@@ -1,14 +1,17 @@
 package org.example.cursera.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "minio_files")
 public class MinioFile {
     @Id
@@ -29,6 +32,10 @@ public class MinioFile {
 
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "topic_id")
+    private Topic topic;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
