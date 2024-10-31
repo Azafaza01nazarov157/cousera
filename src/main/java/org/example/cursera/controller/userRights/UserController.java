@@ -18,6 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @Operation(summary = "get User By Id")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         UserDto userDto =  userService.getUser(id);
@@ -25,6 +26,7 @@ public class UserController {
     }
 
     @PostMapping("change-password")
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @Operation(summary = "Change Password")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest, Principal user) {
         userService.changePassword(changePasswordRequest, user);

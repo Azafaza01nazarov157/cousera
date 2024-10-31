@@ -29,6 +29,7 @@ public class TestController {
             @ApiResponse(responseCode = "201", description = "Тест успешно создан"),
             @ApiResponse(responseCode = "404", description = "Тема не найдена")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/create")
     public ResponseEntity<TestDto> createTest(
             @Parameter(description = "ID темы") @RequestParam Long topicId,
@@ -49,6 +50,7 @@ public class TestController {
             @ApiResponse(responseCode = "200", description = "Список тестов успешно получен"),
             @ApiResponse(responseCode = "404", description = "Тема не найдена")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/topic/{topicId}")
     public ResponseEntity<List<TestDto>> getTestsByTopicId(
             @Parameter(description = "ID темы") @PathVariable Long topicId) {
@@ -64,6 +66,7 @@ public class TestController {
             @ApiResponse(responseCode = "200", description = "Результат теста успешно получен"),
             @ApiResponse(responseCode = "404", description = "Тест или пользователь не найден")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/{testId}/take")
     public ResponseEntity<TestResultDto> takeTest(
             @Parameter(description = "ID теста") @PathVariable Long testId,
@@ -80,6 +83,7 @@ public class TestController {
             @ApiResponse(responseCode = "200", description = "Результаты тестов успешно получены"),
             @ApiResponse(responseCode = "404", description = "Тема или пользователь не найдены")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/topic/{topicId}/user/{userId}/results")
     public ResponseEntity<List<TestResultDto>> getUserResultsByTopic(
             @Parameter(description = "ID пользователя") @PathVariable Long userId,

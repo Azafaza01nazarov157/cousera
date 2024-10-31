@@ -54,4 +54,4 @@ application:
       token-validity-in-seconds: 604800000
       token-validity-in-seconds-for-remember-me: 604800000
   cors:
-    allowed-origins-base: "http://your-frontend-url.com"
+    allowed-origins-base: "http://localhost:5173/"

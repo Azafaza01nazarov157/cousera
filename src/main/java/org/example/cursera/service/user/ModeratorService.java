@@ -1,8 +1,6 @@
 package org.example.cursera.service.user;
 
 import org.example.cursera.domain.dtos.GetCourseDto;
-import org.example.cursera.domain.dtos.LessonDto;
-import org.example.cursera.domain.dtos.ModuleDto;
 import org.example.cursera.domain.dtos.SubscriberDto;
 
 import java.util.List;
@@ -10,70 +8,44 @@ import java.util.List;
 public interface ModeratorService {
 
     /**
-     * Create a new module within a specified course.
+     * Добавить подписчика к курсу (доступно только модераторам).
      *
-     * @param userId    The ID of the moderator creating the module.
-     * @param courseId  The ID of the course to which the module will be added.
-     * @param moduleName The name of the new module.
-     */
-    void createModule(Long userId, Long courseId, String moduleName);
-
-    /**
-     * Create a new lesson associated with a specific module.
-     *
-     * @param moduleId          The ID of the module to associate the lesson with.
-     * @param lessonName        The name of the lesson.
-     * @param lessonDescription The description of the lesson.
-     * @return The created LessonDto object with details of the new lesson.
-     */
-    LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription);
-
-    /**
-     * Add a subscriber to a specific course, allowed only for moderators.
-     *
-     * @param moderatorId The ID of the moderator adding the subscriber.
-     * @param courseId    The ID of the course to add the subscriber to.
-     * @param userId      The ID of the user to be subscribed.
+     * @param moderatorId Идентификатор модератора.
+     * @param courseId    Идентификатор курса.
+     * @param userId      Идентификатор пользователя для подписки.
      */
     void addSubscriberToCourse(Long moderatorId, Long courseId, Long userId);
 
     /**
-     * Retrieve detailed information about a course by its ID.
+     * Получить детальную информацию о курсе по его идентификатору.
      *
-     * @param courseId The ID of the course to retrieve.
-     * @return A GetCourseDto object containing details of the course.
+     * @param courseId Идентификатор курса.
+     * @return Объект GetCourseDto с деталями курса.
      */
     GetCourseDto findCourseById(Long courseId);
 
     /**
-     * Retrieve details of a specific module by its ID.
+     * Получить список всех подписчиков указанного курса.
      *
-     * @param moduleId The ID of the module to retrieve.
-     * @return A ModuleDto object with details of the specified module.
-     */
-    ModuleDto findModuleById(Long moduleId);
-
-    /**
-     * Get a list of all subscribers in a specific course.
-     *
-     * @param courseId The ID of the course to retrieve subscribers for.
-     * @return A list of SubscriberDto objects, each representing a subscriber.
+     * @param courseId Идентификатор курса.
+     * @return Список объектов SubscriberDto.
      */
     List<SubscriberDto> getAllSubscribers(Long courseId);
 
     /**
-     * Find a specific lesson by its ID.
+     * Approve a subscription request for a course.
      *
-     * @param lessonId The ID of the lesson to retrieve.
-     * @return A LessonDto object with details of the specified lesson.
+     * @param courseId ID of the course.
+     * @param requestId ID of the subscription request to approve.
      */
-    LessonDto findLessonById(Long lessonId);
+    void approveSubscription(Long courseId, Long requestId);
+
 
     /**
-     * Get a list of lessons associated with a specific module.
+     * Approve a subscription request for a course.
      *
-     * @param moduleId The ID of the module to retrieve lessons for.
-     * @return A list of LessonDto objects, each representing a lesson in the module.
+     * @param courseId ID of the course.
+     * @param requestId ID of the subscription request to approve.
      */
-    List<LessonDto> getLessonsByModuleId(Long moduleId);
+    void rejectSubscription(Long courseId, Long requestId);
 }

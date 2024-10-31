@@ -25,6 +25,7 @@ public class TopicController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Темы успешно получены")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping
     public ResponseEntity<List<TopicDto>> getAllTopics() {
         List<TopicDto> topics = topicService.getAllTopics();
@@ -38,6 +39,7 @@ public class TopicController {
         @ApiResponse(responseCode = "201", description = "Тема успешно создана"),
         @ApiResponse(responseCode = "404", description = "Урок не найден")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/create")
     public ResponseEntity<TopicDto> createTopic(
             @Parameter(description = "Название темы") @RequestParam String name,
@@ -54,6 +56,7 @@ public class TopicController {
         @ApiResponse(responseCode = "200", description = "Тема успешно найдена"),
         @ApiResponse(responseCode = "404", description = "Тема не найдена")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/{topicId}")
     public ResponseEntity<TopicDto> findTopicById(
             @Parameter(description = "ID темы") @PathVariable Long topicId) {
@@ -69,6 +72,7 @@ public class TopicController {
         @ApiResponse(responseCode = "200", description = "Тема успешно обновлена"),
         @ApiResponse(responseCode = "404", description = "Тема не найдена")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PutMapping("/{topicId}/update")
     public ResponseEntity<TopicDto> updateTopic(
             @Parameter(description = "ID темы") @PathVariable Long topicId,
@@ -85,6 +89,7 @@ public class TopicController {
         @ApiResponse(responseCode = "204", description = "Тема успешно удалена"),
         @ApiResponse(responseCode = "404", description = "Тема не найдена")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @DeleteMapping("/{topicId}/delete")
     public ResponseEntity<Void> deleteTopic(
             @Parameter(description = "ID темы") @PathVariable Long topicId) {

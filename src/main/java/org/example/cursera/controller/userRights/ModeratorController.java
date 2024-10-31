@@ -6,13 +6,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.example.cursera.domain.dtos.GetCourseDto;
-import org.example.cursera.domain.dtos.LessonDto;
-import org.example.cursera.domain.dtos.ModuleDto;
 import org.example.cursera.domain.dtos.SubscriberDto;
-import org.example.cursera.domain.entity.Lesson;
-import org.example.cursera.domain.entity.Module;
+import org.example.cursera.exeption.ForbiddenException;
+import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.user.ModeratorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,111 +24,96 @@ import java.util.List;
 public class ModeratorController {
     private final ModeratorService moderatorService;
 
-    @Operation(summary = "Create a new module", description = "Creates a new module for a given course.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Module created successfully"),
-            @ApiResponse(responseCode = "404", description = "Course or user not found"),
-            @ApiResponse(responseCode = "403", description = "Access denied: user is not a moderator")
-    })
-    @PostMapping("/create-module")
-    public ResponseEntity<String> createModule(@RequestParam Long userId,
-                                               @RequestParam Long courseId,
-                                               @RequestParam String moduleName) {
-        moderatorService.createModule(userId, courseId, moduleName);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Module created successfully.");
-    }
-
-
-    @Operation(summary = "Создание урока", description = "Создаёт новый урок в указанном модуле")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Урок успешно создан"),
-            @ApiResponse(responseCode = "404", description = "Модуль не найден")
-    })
-    @PostMapping("/create")
-    public ResponseEntity<LessonDto> createLesson(
-            @Parameter(description = "ID модуля") @RequestParam Long moduleId,
-            @Parameter(description = "Название урока") @RequestParam String lessonName,
-            @Parameter(description = "Описание урока") @RequestParam String lessonDescription) {
-        val create = moderatorService.createLesson(moduleId, lessonName, lessonDescription);
-        return new ResponseEntity<>(create,HttpStatus.CREATED);
-    }
-
     @Operation(summary = "Add a subscriber to a course", description = "Adds a user as a subscriber to a specified course.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User subscribed to course successfully"),
             @ApiResponse(responseCode = "404", description = "Moderator, course, or user not found"),
             @ApiResponse(responseCode = "403", description = "Access denied: user is not a moderator")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/add-subscriber")
-    public ResponseEntity<String> addSubscriberToCourse(@RequestParam Long moderatorId,
-                                                        @RequestParam Long courseId,
-                                                        @RequestParam Long userId) {
-        moderatorService.addSubscriberToCourse(moderatorId, courseId, userId);
-        return ResponseEntity.ok("User subscribed to course successfully.");
+    public ResponseEntity<String> addSubscriberToCourse(
+            @RequestParam Long moderatorId,
+            @RequestParam Long courseId,
+            @RequestParam Long userId) {
+        try {
+            moderatorService.addSubscriberToCourse(moderatorId, courseId, userId);
+            return ResponseEntity.ok("User subscribed to course successfully.");
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (ForbiddenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
-
 
     @Operation(summary = "Find a course by ID", description = "Retrieves a course by its unique identifier.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Course found"),
             @ApiResponse(responseCode = "404", description = "Course not found")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/course/{courseId}")
     public ResponseEntity<GetCourseDto> findCourseById(@PathVariable Long courseId) {
-        GetCourseDto course = moderatorService.findCourseById(courseId);
-        return ResponseEntity.ok(course);
+        try {
+            GetCourseDto course = moderatorService.findCourseById(courseId);
+            return ResponseEntity.ok(course);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
-
-
-    @Operation(summary = "Find a module by ID", description = "Retrieves a module by its unique identifier.")
+    @Operation(summary = "Get all subscribers of a course", description = "Retrieves all subscribers for a specified course.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Module found"),
-            @ApiResponse(responseCode = "404", description = "Module not found")
+            @ApiResponse(responseCode = "200", description = "Subscribers retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Course not found")
     })
-    @GetMapping("/module/{moduleId}")
-    public ResponseEntity<ModuleDto> findModuleById(@PathVariable Long moduleId) {
-        final ModuleDto module = moderatorService.findModuleById(moduleId);
-        return ResponseEntity.ok(module);
-    }
-
-    @Operation(summary = "Find a module by ID", description = "SubscriberDto a module by its unique getAllSubscribers.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Module found"),
-            @ApiResponse(responseCode = "404", description = "Module not found")
-    })
-
-
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/{courseId}/all/subscribers")
     public ResponseEntity<List<SubscriberDto>> getAllSubscribers(@PathVariable Long courseId) {
-        List<SubscriberDto> subscribers = moderatorService.getAllSubscribers(courseId);
-        return ResponseEntity.ok(subscribers);
+        try {
+            List<SubscriberDto> subscribers = moderatorService.getAllSubscribers(courseId);
+            return ResponseEntity.ok(subscribers);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
-
-    @Operation(summary = "Поиск урока по ID", description = "Возвращает информацию об уроке по указанному ID")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Урок успешно найден"),
-            @ApiResponse(responseCode = "404", description = "Урок не найден")
+    @Operation(summary = "Approve subscription request", description = "Allows a moderator to approve a subscription request")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Subscription approved successfully"),
+            @ApiResponse(responseCode = "404", description = "Subscription request not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied or subscription limit reached")
     })
-    @GetMapping("/{lessonId}")
-    public ResponseEntity<LessonDto> findLessonById(
-            @Parameter(description = "ID урока") @PathVariable Long lessonId) {
-
-        final LessonDto lessonDto = moderatorService.findLessonById(lessonId);
-        return new ResponseEntity<>(lessonDto, HttpStatus.OK);
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @PostMapping("/{courseId}/approve-request/{requestId}")
+    public ResponseEntity<String> approveSubscription(
+            @PathVariable Long courseId,
+            @PathVariable Long requestId) {
+        try {
+            moderatorService.approveSubscription(courseId, requestId);
+            return ResponseEntity.ok("Subscription approved successfully");
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (ForbiddenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 
-    @Operation(summary = "Get lessons by module ID", description = "Retrieves a list of lessons for the specified module")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lesson list retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Module not found")
+    @Operation(summary = "Reject subscription request", description = "Allows a moderator to reject a subscription request")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Subscription rejected successfully"),
+            @ApiResponse(responseCode = "404", description = "Subscription request not found")
     })
-    @GetMapping("/module/{moduleId}/lessons")
-    public ResponseEntity<List<LessonDto>> getLessonsByModuleId(
-            @Parameter(description = "Module ID") @PathVariable Long moduleId) {
-        List<LessonDto> lessons = moderatorService.getLessonsByModuleId(moduleId);
-        return ResponseEntity.ok(lessons);
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @PostMapping("/{courseId}/reject-request/{requestId}")
+    public ResponseEntity<String> rejectSubscription(
+            @PathVariable Long courseId,
+            @PathVariable Long requestId) {
+        try {
+            moderatorService.rejectSubscription(courseId, requestId);
+            return ResponseEntity.ok("Subscription rejected successfully");
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
-
 }

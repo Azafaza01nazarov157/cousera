@@ -24,6 +24,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Admin not found")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/users")
     public ResponseEntity<List<UsersDto>> getAllUsers(@RequestParam Long adminId) {
         List<UsersDto> users = adminService.findAllUsers(adminId);
@@ -36,6 +37,7 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Admin not found"),
             @ApiResponse(responseCode = "400", description = "Invalid moderator email")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/moderators")
     public ResponseEntity<String> createModerator(@RequestParam Long adminId, @RequestParam String moderatorEmail) {
         adminService.createModerator(adminId, moderatorEmail);
@@ -47,6 +49,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Admin or user not found")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<String> deleteUser(@RequestParam Long adminId, @PathVariable Long userId) {
         adminService.deleteUser(adminId, userId);
@@ -58,6 +61,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "User role updated successfully"),
             @ApiResponse(responseCode = "404", description = "Admin or user not found")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PutMapping("/users/{userId}/role")
     public ResponseEntity<String> updateUserRole(
             @RequestParam Long adminId,
@@ -72,6 +76,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "Moderators retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Admin not found")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/moderators")
     public ResponseEntity<List<UsersDto>> getAllModerators(@RequestParam Long adminId) {
         List<UsersDto> moderators = adminService.findAllModerators(adminId);
@@ -83,6 +88,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "Active users retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Admin not found")
     })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/users/active")
     public ResponseEntity<List<UsersDto>> getAllActiveUsers(@RequestParam Long adminId) {
         List<UsersDto> activeUsers = adminService.findAllActiveUsers(adminId);

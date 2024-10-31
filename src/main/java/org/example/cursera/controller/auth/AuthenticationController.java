@@ -26,12 +26,14 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @Operation(summary = "Register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
 
     @PostMapping("/otp")
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @Operation(summary = "OtpStatus")
     public ResponseEntity<OtpStatus> otpStatus(@RequestBody OtpRequest request) {
         OtpStatus body = service.checkOtp(request);
@@ -39,12 +41,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/authenticate")
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @Operation(summary = "authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(service.authenticate(request));
     }
 
     @PostMapping("/refresh-token")
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @Operation(summary = "RefreshToken")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         service.refreshToken(request, response);
