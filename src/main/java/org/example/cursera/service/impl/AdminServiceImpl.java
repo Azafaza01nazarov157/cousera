@@ -39,6 +39,27 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+
+    @Override
+    public List<UsersDto> findAllMODERATOR(Long userId) {
+        val user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "User not found")));
+
+        if (Role.ADMIN.equals(user.getRole())) {
+            List<User> users = userRepository.findAll();
+            List<User> moderators = users.stream()
+                    .filter(u -> Role.MODERATOR.equals(u.getRole()))
+                    .toList();
+
+            return moderators.stream()
+                    .map(this::convertToUsersDto)
+                    .toList();
+        } else {
+            throw new ForbiddenException(new ErrorDto("403", "Access denied"));
+        }
+    }
+
+
     @Override
     public void createModerator(Long adminId, String moderatorEmail) {
         val admin = userRepository.findById(adminId)
@@ -61,7 +82,7 @@ public class AdminServiceImpl implements AdminService {
         log.info("User with ID {} has been deleted by Admin with ID {}", userId, adminId);
     }
 
-    public void updateUserRole(Long adminId, Long userId, Role newRole) {
+    public void updateUserRole(Long adminId, Long userId, String newRole) {
         val admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "User not found")));
         if (!Role.ADMIN.equals(admin.getRole())) {
@@ -69,7 +90,8 @@ public class AdminServiceImpl implements AdminService {
         }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "User not found")));
-        user.setRole(newRole);
+        Role updatedRole = Role.valueOf(newRole.toUpperCase());
+        user.setRole(updatedRole);
         userRepository.save(user);
         log.info("User with ID {} role updated to {} by Admin with ID {}", userId, newRole, adminId);
     }

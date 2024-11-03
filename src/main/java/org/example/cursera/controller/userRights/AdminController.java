@@ -31,6 +31,18 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
+    @Operation(summary = "Get all moderator", description = "Retrieves a list of all moderator.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Admin not found")
+    })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @GetMapping("/users/moderator")
+    public ResponseEntity<List<UsersDto>> getAllMODERATOR(@RequestParam Long adminId) {
+        List<UsersDto> users = adminService.findAllMODERATOR(adminId);
+        return ResponseEntity.ok(users);
+    }
+
     @Operation(summary = "Create a new moderator", description = "Creates a moderator account.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Moderator created successfully"),
@@ -66,7 +78,7 @@ public class AdminController {
     public ResponseEntity<String> updateUserRole(
             @RequestParam Long adminId,
             @PathVariable Long userId,
-            @RequestParam Role newRole) {
+            @RequestParam String newRole) {
         adminService.updateUserRole(adminId, userId, newRole);
         return ResponseEntity.ok("User role updated successfully");
     }
