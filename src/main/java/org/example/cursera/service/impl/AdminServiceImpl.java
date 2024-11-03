@@ -30,8 +30,11 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "User not found")));
 
         if (Role.ADMIN.equals(user.getRole())) {
-            List<User> users = userRepository.findAll();
-            return users.stream()
+            val users = userRepository.findAll();
+            val usersRole = users.stream()
+                    .filter(u -> Role.USER.equals(u.getRole()))
+                    .toList();
+            return usersRole.stream()
                     .map(this::convertToUsersDto)
                     .toList();
         } else {
