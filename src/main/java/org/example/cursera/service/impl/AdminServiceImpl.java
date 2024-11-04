@@ -31,10 +31,10 @@ public class AdminServiceImpl implements AdminService {
 
         if (Role.ADMIN.equals(user.getRole())) {
             val users = userRepository.findAll();
-            val usersRole = users.stream()
-                    .filter(u -> Role.USER.equals(u.getRole()))
+            val filteredUsers = users.stream()
+                    .filter(u -> Role.USER.equals(u.getRole()) && Boolean.TRUE.equals(u.getCheckOtp()))
                     .toList();
-            return usersRole.stream()
+            return filteredUsers.stream()
                     .map(this::convertToUsersDto)
                     .toList();
         } else {
