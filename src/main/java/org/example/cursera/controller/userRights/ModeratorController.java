@@ -1,11 +1,11 @@
 package org.example.cursera.controller.userRights;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.cursera.domain.dtos.CourseDto;
 import org.example.cursera.domain.dtos.GetCourseDto;
 import org.example.cursera.domain.dtos.SubscriberDto;
 import org.example.cursera.exeption.ForbiddenException;
@@ -116,4 +116,24 @@ public class ModeratorController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    @Operation(summary = "Get all courses by moderator", description = "Retrieve all courses managed by a specific moderator.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Courses retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "No courses found for the specified moderator")
+    })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @GetMapping("/moderators/{moderatorId}/courses")
+    public ResponseEntity<List<CourseDto>> getCoursesByModeratorId(@PathVariable Long moderatorId) {
+        try {
+            List<CourseDto> courses = moderatorService.getCoursesByModeratorId(moderatorId);
+            if (courses.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(courses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }

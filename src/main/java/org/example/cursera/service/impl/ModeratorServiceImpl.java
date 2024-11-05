@@ -3,6 +3,7 @@ package org.example.cursera.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.example.cursera.domain.dtos.CourseDto;
 import org.example.cursera.domain.dtos.GetCourseDto;
 import org.example.cursera.domain.dtos.ModuleDto;
 import org.example.cursera.domain.dtos.SubscriberDto;
@@ -148,4 +149,25 @@ public class ModeratorServiceImpl implements ModeratorService {
         log.info("Запрос на подписку пользователя '{}' на курс '{}' был отклонен",
                 request.getUser().getUsername(), course.getName());
     }
+
+
+    public List<CourseDto> getCoursesByModeratorId(Long moderatorId) {
+        List<Course> courses = courseRepository.findAllByModeratorId(moderatorId);
+        return courses.stream()
+                .map(this::convertToGetCourseDto)
+                .collect(Collectors.toList());
+    }
+
+    private CourseDto convertToGetCourseDto(Course course) {
+
+        return CourseDto.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .description(course.getDescription())
+                .companyName(course.getCompanyName())
+                .createAt(course.getCreateAt())
+                .moderatorId(course.getModeratorId())
+                .build();
+    }
+
 }

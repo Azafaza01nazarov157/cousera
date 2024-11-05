@@ -1,5 +1,6 @@
 package org.example.cursera.service.user;
 
+import org.example.cursera.domain.dtos.CourseDto;
 import org.example.cursera.domain.dtos.GetCourseDto;
 import org.example.cursera.domain.dtos.SubscriberDto;
 
@@ -48,4 +49,12 @@ public interface ModeratorService {
      * @param requestId ID of the subscription request to approve.
      */
     void rejectSubscription(Long courseId, Long requestId);
+
+    /**
+     * Получить список всех курсов, управляемых указанным модератором.
+     *
+     * @param moderatorId Идентификатор модератора.
+     * @return Список объектов GetCourseDto.
+     */
+    List<CourseDto> getCoursesByModeratorId(Long moderatorId);
 }

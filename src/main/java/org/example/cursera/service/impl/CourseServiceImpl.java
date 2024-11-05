@@ -156,4 +156,27 @@ public class CourseServiceImpl implements CourseService {
         return subscriptionRequestRepository.findByCourseIdAndUserId(courseId, userId);
     }
 
+
+
+    @Override
+    public List<GetModuleDto> getModuleByCourseId(Long courseId) {
+        List<Module> modules = moduleRepository.findByCourseId(courseId);
+
+        if (modules.isEmpty()) {
+            throw new NotFoundException(new ErrorDto("404", "Пользователь не найден"));
+        }
+
+        return modules.stream().map(this::convertToModuleDto).toList();
+    }
+
+    private GetModuleDto convertToModuleDto(Module module) {
+        return GetModuleDto.builder()
+                .id(module.getId())
+                .name(module.getName())
+                .lessons(module.getLessons().size())
+                .build();
+    }
+
+
+
 }

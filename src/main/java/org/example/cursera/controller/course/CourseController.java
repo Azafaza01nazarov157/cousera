@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.example.cursera.domain.dtos.CreateCourseDto;
 import org.example.cursera.domain.dtos.GetCourseDto;
+import org.example.cursera.domain.dtos.GetModuleDto;
 import org.example.cursera.domain.entity.SubscriptionRequest;
 import org.example.cursera.exeption.ForbiddenException;
 import org.example.cursera.exeption.NotFoundException;
@@ -122,4 +123,21 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
+    @Operation(summary = "Get modules by course", description = "Retrieve all modules for a specific course.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Modules retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Course not found")
+    })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @GetMapping("/courses/{courseId}/modules")
+    public ResponseEntity<List<GetModuleDto>> getModulesByCourseId(@PathVariable Long courseId) {
+        try {
+            List<GetModuleDto> modules = courseService.getModuleByCourseId(courseId);
+            return ResponseEntity.ok(modules);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
 }
