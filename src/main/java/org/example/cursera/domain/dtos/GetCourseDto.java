@@ -21,8 +21,6 @@ public class GetCourseDto {
 
     private LocalDate createAt;
 
-    private List<SubscriberDto> subscribers;
-
     private Long moderatorId;
 
     private List<ModuleDto> modules;

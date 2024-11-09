@@ -92,7 +92,6 @@ public class ModeratorServiceImpl implements ModeratorService {
                 .description(course.getDescription())
                 .companyName(course.getCompanyName())
                 .createAt(course.getCreateAt())
-                .subscribers(subscribers)
                 .moderatorId(course.getModeratorId())
                 .modules(modules)
                 .build();

@@ -88,10 +88,6 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private GetCourseDto convertToDto(Course course) {
-        List<SubscriberDto> subscribers = course.getSubscribers().stream()
-                .map(subscriber -> new SubscriberDto(subscriber.getId(), subscriber.getUsername(), subscriber.getEmail(), subscriber.getRole().name()))
-                .collect(Collectors.toList());
-
         List<ModuleDto> modules = course.getModules().stream()
                 .map(module -> {
                     ModelCourseDto modelCourseDto = ModelCourseDto.builder()
@@ -118,7 +114,6 @@ public class CourseServiceImpl implements CourseService {
                 .description(course.getDescription())
                 .companyName(course.getCompanyName())
                 .createAt(course.getCreateAt())
-                .subscribers(subscribers)
                 .moderatorId(course.getModeratorId())
                 .modules(modules)
                 .build();

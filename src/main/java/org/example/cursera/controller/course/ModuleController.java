@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.example.cursera.domain.dtos.GetUsersModuleDto;
 import org.example.cursera.domain.dtos.ModuleDto;
 import org.example.cursera.service.course.ModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +48,9 @@ public class ModuleController {
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/{moduleId}")
-    public ResponseEntity<ModuleDto> findModuleById(@PathVariable Long moduleId) {
+    public ResponseEntity<GetUsersModuleDto> findModuleById(@PathVariable Long moduleId) {
         try {
-            ModuleDto moduleDto = moduleService.findModuleById(moduleId);
+            GetUsersModuleDto moduleDto = moduleService.findModuleById(moduleId);
             if (moduleDto == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
@@ -58,5 +59,6 @@ public class ModuleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 }
 
