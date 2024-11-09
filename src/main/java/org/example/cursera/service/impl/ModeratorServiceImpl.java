@@ -40,7 +40,7 @@ public class ModeratorServiceImpl implements ModeratorService {
         val moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Модератор не найден")));
         if (!Role.MODERATOR.equals(moderator.getRole())) {
-            throw new NotFoundException(new ErrorDto("403", "Пользователь не является модератором"));
+            throw new ForbiddenException(new ErrorDto("403", "Пользователь не является модератором"));
         }
 
         Course course = courseRepository.findById(courseId)
@@ -48,13 +48,20 @@ public class ModeratorServiceImpl implements ModeratorService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Пользователь не найден")));
 
-        if (!course.getSubscribers().contains(user)) {
-            course.getSubscribers().add(user);
-            courseRepository.save(course);
-            log.info("Пользователь '{}' подписан на курс '{}'", user.getUsername(), course.getName());
-        } else {
+        boolean alreadySubscribed = subscriptionRequestRepository.existsByUserAndCourseAndStatus(user, course, RequestStatus.APPROVED);
+        if (alreadySubscribed) {
             log.info("Пользователь '{}' уже подписан на курс '{}'", user.getUsername(), course.getName());
+            return;
         }
+
+        SubscriptionRequest subscriptionRequest = SubscriptionRequest.builder()
+                .course(course)
+                .user(user)
+                .status(RequestStatus.APPROVED)
+                .build();
+
+        subscriptionRequestRepository.save(subscriptionRequest);
+        log.info("Пользователь '{}' подписан на курс '{}'", user.getUsername(), course.getName());
     }
 
     @Override

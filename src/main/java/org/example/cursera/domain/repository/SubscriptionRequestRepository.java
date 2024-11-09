@@ -17,4 +17,6 @@ public interface SubscriptionRequestRepository extends JpaRepository<Subscriptio
     List<SubscriptionRequest> findByCourseIdAndUserId(Long courseId, Long userId);
 
     List<SubscriptionRequest> findByUserAndStatus(User user, RequestStatus requestStatus);
+
+    boolean existsByUserAndCourseAndStatus(User user, Course course, RequestStatus requestStatus);
 }
