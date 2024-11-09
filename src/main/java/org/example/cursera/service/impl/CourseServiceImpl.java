@@ -178,5 +178,30 @@ public class CourseServiceImpl implements CourseService {
     }
 
 
+    public List<CourseDto> getSubscribedCourses(final User user) {
+        return subscriptionRequestRepository.findByUserAndStatus(user, RequestStatus.APPROVED)
+                .stream()
+                .map(SubscriptionRequest::getCourse)
+                .map(this::mapToCourseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Maps a Course entity to a CourseDto.
+     *
+     * @param course The course entity to be mapped.
+     * @return The mapped CourseDto.
+     */
+    private CourseDto mapToCourseDto(final Course course) {
+        return CourseDto.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .description(course.getDescription())
+                .companyName(course.getCompanyName())
+                .createAt(course.getCreateAt())
+                .moderatorId(course.getModeratorId())
+                .build();
+    }
+
 
 }

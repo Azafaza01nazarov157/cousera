@@ -5,13 +5,17 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+import org.example.cursera.domain.dtos.CourseDto;
 import org.example.cursera.domain.dtos.CreateCourseDto;
 import org.example.cursera.domain.dtos.GetCourseDto;
 import org.example.cursera.domain.dtos.GetModuleDto;
 import org.example.cursera.domain.entity.SubscriptionRequest;
+import org.example.cursera.domain.entity.User;
 import org.example.cursera.exeption.ForbiddenException;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.CourseService;
+import org.example.cursera.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +28,7 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
+    private final UserService userService;
 
     @Operation(summary = "Get all courses", description = "Retrieve a list of all available courses")
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
@@ -140,4 +145,24 @@ public class CourseController {
         }
     }
 
+
+    @Operation(summary = "Get subscribed courses", description = "Retrieve all subscribed courses for the current user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Subscribed courses retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @GetMapping("/{userId}/subscribed-courses")
+    public ResponseEntity<List<CourseDto>> getSubscribedCourses(@PathVariable Long userId) {
+        try {
+            val user = userService.findById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            final List<CourseDto> subscribedCourses = courseService.getSubscribedCourses(user);
+            return ResponseEntity.ok(subscribedCourses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

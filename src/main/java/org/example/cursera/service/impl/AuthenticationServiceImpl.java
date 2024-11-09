@@ -72,19 +72,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public OtpStatus checkOtp(OtpRequest otpRequest) {
-        var user = repository.findByEmail(otpRequest.getEmail())
-                .orElseThrow();
-        if (user.getOtp().equals(otpRequest.getOtp())) {
+        var optionalUser = repository.findByEmail(otpRequest.getEmail());
+
+        if (optionalUser.isEmpty()) {
+            return OtpStatus.builder()
+                    .status(false)
+                    .build();
+        }
+        var user = optionalUser.get();
+
+        if (otpRequest.getOtp().equals(user.getOtp())) {
             user.setCheckOtp(true);
+            user.setAttempt(0);
             repository.save(user);
-            return OtpStatus.builder().status(true).build();
+            return OtpStatus.builder()
+                    .status(true)
+                    .build();
         } else {
             user.setAttempt(user.getAttempt() + 1);
             if (user.getAttempt() >= 2) {
                 user.setActive(false);
             }
             repository.save(user);
-            return OtpStatus.builder().status(false).build();
+            return OtpStatus.builder()
+                    .status(false)
+                    .build();
         }
     }
 
