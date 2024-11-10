@@ -32,21 +32,33 @@ public class TopicController {
         return new ResponseEntity<>(topics, HttpStatus.OK);
     }
 
-
+    @Operation(summary = "Get all topics by lesson ID", description = "Retrieve a list of topics for the specified lesson ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Topics retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Lesson not found")
+    })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @GetMapping("/by-lesson/{lessonId}")
+    public ResponseEntity<List<TopicDto>> getAllTopicsByLessonId(@PathVariable Long lessonId) {
+        List<TopicDto> topics = topicService.getAllTopicsByLessonId(lessonId);
+        return ResponseEntity.ok(topics);
+    }
 
     @Operation(summary = "Создание темы", description = "Создает новую тему для указанного урока")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Тема успешно создана"),
-        @ApiResponse(responseCode = "404", description = "Урок не найден")
+            @ApiResponse(responseCode = "201", description = "Тема успешно создана"),
+            @ApiResponse(responseCode = "404", description = "Урок не найден")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/create")
-    public ResponseEntity<TopicDto> createTopic(
+    public ResponseEntity<Void> createTopic(
             @Parameter(description = "Название темы") @RequestParam String name,
+            @Parameter(description = "Описание темы") @RequestParam(required = false) String description,
+            @Parameter(description = "Заголовок темы") @RequestParam(required = false) String title,
             @Parameter(description = "ID урока") @RequestParam Long lessonId) {
-        
-        TopicDto topicDto = topicService.createTopic(name, lessonId);
-        return new ResponseEntity<>(topicDto, HttpStatus.CREATED);
+
+        topicService.createTopic(name, description, title, lessonId);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 

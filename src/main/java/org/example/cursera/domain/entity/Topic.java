@@ -18,7 +18,11 @@ public class Topic {
     private Long id;
 
     private String name;
-    
+
+    private String description;
+
+    private String title;
+
     @ManyToOne
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;

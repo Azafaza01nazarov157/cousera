@@ -13,14 +13,16 @@ public interface TopicService {
      */
     List<TopicDto> getAllTopics();
 
+
+
+    List<TopicDto> getAllTopicsByLessonId(Long lessonId);
     /**
      * Create a new topic associated with a specific lesson.
      *
      * @param name     The name of the new topic.
      * @param lessonId The ID of the lesson to associate the topic with.
-     * @return The created TopicDto object with details of the new topic.
      */
-    TopicDto createTopic(String name, Long lessonId);
+    void createTopic(String name, String description, String title, Long lessonId);
 
     /**
      * Retrieve a topic by its unique ID.
