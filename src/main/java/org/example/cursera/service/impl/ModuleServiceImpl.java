@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.cursera.domain.dtos.GetUsersModuleDto;
 import org.example.cursera.domain.dtos.LessonDto;
+import org.example.cursera.domain.dtos.ModuleUserDto;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
 import org.example.cursera.domain.entity.Course;
 import org.example.cursera.domain.entity.Module;
@@ -27,12 +28,14 @@ public class ModuleServiceImpl implements ModuleService {
 
     @Override
     @Transactional
-    public void createModule(Long courseId, String moduleName) {
+    public void createModule(Long courseId, String moduleName, String description, String level) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Курс не найден")));
 
         Module module = Module.builder()
                 .name(moduleName)
+                .description(description)
+                .level(level)
                 .course(course)
                 .lessons(new ArrayList<>())
                 .build();
@@ -58,8 +61,24 @@ public class ModuleServiceImpl implements ModuleService {
         return GetUsersModuleDto.builder()
                 .id(module.getId())
                 .name(module.getName())
+                .description(module.getDescription())
+                .level(module.getLevel())
                 .lessons(lessonDtos)
                 .build();
     }
 
+
+    @Override
+    public ModuleUserDto findUserModuleById(Long moduleId) {
+        Module module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Модуль не найден")));
+
+        return ModuleUserDto.builder()
+                .id(module.getId())
+                .name(module.getName())
+                .description(module.getDescription())
+                .courseName(module.getCourse().getName())
+                .level(module.getLevel())
+                .build();
+    }
 }

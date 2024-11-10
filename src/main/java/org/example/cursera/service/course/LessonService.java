@@ -31,4 +31,11 @@ public interface LessonService {
      * @return Список объектов LessonDto.
      */
     List<LessonDto> getLessonsByModuleId(Long moduleId);
+
+    /**
+     * Удалить урок по его идентификатору.
+     *
+     * @param lessonId Идентификатор урока.
+     */
+    void deleteLesson(Long lessonId);
 }

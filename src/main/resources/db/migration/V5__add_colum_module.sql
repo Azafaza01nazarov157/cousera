@@ -1,0 +1,3 @@
+ALTER TABLE modules
+    ADD COLUMN description VARCHAR(500),
+ADD COLUMN level VARCHAR(500);

@@ -2,6 +2,7 @@ package org.example.cursera.service.course;
 
 
 import org.example.cursera.domain.dtos.GetUsersModuleDto;
+import org.example.cursera.domain.dtos.ModuleUserDto;
 
 public interface ModuleService {
 
@@ -11,7 +12,7 @@ public interface ModuleService {
      * @param courseId   Идентификатор курса.
      * @param moduleName Название нового модуля.
      */
-    void createModule(Long courseId, String moduleName);
+    void createModule(Long courseId, String moduleName, String description, String level);
 
     /**
      * Получить детали модуля по его идентификатору.
@@ -20,4 +21,11 @@ public interface ModuleService {
      * @return Объект ModuleDto с деталями модуля.
      */
     GetUsersModuleDto findModuleById(Long moduleId);
+    /**
+     * Получить детали модуля по его идентификатору.
+     *
+     * @param moduleId Идентификатор модуля.
+     * @return Объект ModuleDto с деталями модуля.
+     */
+    ModuleUserDto findUserModuleById(Long moduleId);
 }

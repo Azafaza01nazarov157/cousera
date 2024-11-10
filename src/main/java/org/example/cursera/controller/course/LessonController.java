@@ -1,11 +1,13 @@
 package org.example.cursera.controller.course;
 
 import org.example.cursera.domain.dtos.LessonDto;
+import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.LessonService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +39,7 @@ public class LessonController {
             LessonDto createdLesson = lessonService.createLesson(moduleId, lessonName, lessonDescription);
             return ResponseEntity.status(201).body(createdLesson);
         } catch (Exception e) {
-            return ResponseEntity.status(404).build(); // Adjust error handling as needed
+            return ResponseEntity.status(404).build();
         }
     }
 
@@ -55,7 +57,7 @@ public class LessonController {
             }
             return ResponseEntity.ok(lessonDto);
         } catch (Exception e) {
-            return ResponseEntity.status(500).build(); // Adjust error handling as needed
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -70,7 +72,23 @@ public class LessonController {
             List<LessonDto> lessons = lessonService.getLessonsByModuleId(moduleId);
             return ResponseEntity.ok(lessons);
         } catch (Exception e) {
-            return ResponseEntity.status(404).build(); // Adjust error handling as needed
+            return ResponseEntity.status(404).build();
+        }
+    }
+
+
+    @Operation(summary = "Delete a lesson", description = "Delete a lesson by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Lesson deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Lesson not found")
+    })
+    @DeleteMapping("/{lessonId}")
+    public ResponseEntity<Void> deleteLesson(@PathVariable Long lessonId) {
+        try {
+            lessonService.deleteLesson(lessonId);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }

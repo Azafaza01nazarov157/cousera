@@ -2,14 +2,12 @@ package org.example.cursera.domain.dtos;
 
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetUsersModuleDto {
+public class ModuleUserDto {
     private Long id;
 
     private String name;
@@ -18,6 +16,5 @@ public class GetUsersModuleDto {
 
     private String level;
 
-    private List<LessonDto> lessons;
-
+    private String courseName;
 }

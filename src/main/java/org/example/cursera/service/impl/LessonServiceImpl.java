@@ -73,4 +73,14 @@ public class LessonServiceImpl implements LessonService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+
+    @Override
+    @Transactional
+    public void deleteLesson(Long lessonId) {
+        if (!lessonRepository.existsById(lessonId)) {
+            throw new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found."));
+        }
+        lessonRepository.deleteById(lessonId);
+    }
 }

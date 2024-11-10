@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.example.cursera.domain.dtos.GetUsersModuleDto;
 import org.example.cursera.domain.dtos.ModuleDto;
+import org.example.cursera.domain.dtos.ModuleUserDto;
 import org.example.cursera.service.course.ModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class ModuleController {
 
     private final ModuleService moduleService;
 
+
     @Operation(summary = "Create a new module", description = "Create a new module in the specified course.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Module created successfully"),
@@ -30,9 +32,11 @@ public class ModuleController {
     @PostMapping("/{courseId}/create")
     public ResponseEntity<Void> createModule(
             @PathVariable Long courseId,
-            @RequestParam String moduleName) {
+            @RequestParam String moduleName,
+            @RequestParam String description,
+            @RequestParam String level) {
         try {
-            moduleService.createModule(courseId, moduleName);
+            moduleService.createModule(courseId, moduleName, description, level);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -60,5 +64,23 @@ public class ModuleController {
         }
     }
 
+
+    @Operation(summary = "Get user-specific module details", description = "Retrieve details of a module by its ID for a specific user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User module details retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Module not found")
+    })
+    @GetMapping("/{moduleId}/user")
+    public ResponseEntity<ModuleUserDto> findUserModuleById(@PathVariable Long moduleId) {
+        try {
+            ModuleUserDto moduleDto = moduleService.findUserModuleById(moduleId);
+            if (moduleDto == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(moduleDto);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
 

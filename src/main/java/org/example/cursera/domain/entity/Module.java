@@ -21,6 +21,12 @@ public class Module {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "level")
+    private String level;
+
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
