@@ -1,5 +1,6 @@
 package org.example.cursera.service.course;
 
+import org.example.cursera.domain.dtos.GetTopicDto;
 import org.example.cursera.domain.dtos.TopicDto;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public interface TopicService {
 
 
 
-    List<TopicDto> getAllTopicsByLessonId(Long lessonId);
+    List<GetTopicDto> getAllTopicsByLessonId(Long lessonId);
     /**
      * Create a new topic associated with a specific lesson.
      *

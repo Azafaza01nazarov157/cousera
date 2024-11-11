@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.example.cursera.domain.dtos.GetTopicDto;
 import org.example.cursera.domain.dtos.TopicDto;
 import org.example.cursera.service.course.TopicService;
 import org.springframework.http.HttpStatus;
@@ -39,8 +40,8 @@ public class TopicController {
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/by-lesson/{lessonId}")
-    public ResponseEntity<List<TopicDto>> getAllTopicsByLessonId(@PathVariable Long lessonId) {
-        List<TopicDto> topics = topicService.getAllTopicsByLessonId(lessonId);
+    public ResponseEntity<List<GetTopicDto>> getAllTopicsByLessonId(@PathVariable Long lessonId) {
+        List<GetTopicDto> topics = topicService.getAllTopicsByLessonId(lessonId);
         return ResponseEntity.ok(topics);
     }
 

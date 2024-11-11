@@ -2,6 +2,7 @@ package org.example.cursera.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.cursera.domain.dtos.GetTopicDto;
 import org.example.cursera.domain.dtos.TopicDto;
 import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
@@ -38,17 +39,18 @@ public class TopicServiceImpl implements TopicService {
     }
 
     @Override
-    public List<TopicDto> getAllTopicsByLessonId(Long lessonId) {
+    public List<GetTopicDto> getAllTopicsByLessonId(Long lessonId) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found.")));
 
         return lesson.getTopics().stream()
-                .map(topic -> TopicDto.builder()
+                .map(topic -> GetTopicDto.builder()
                         .id(topic.getId())
                         .name(topic.getName())
                         .lessonId(topic.getLesson().getId())
                         .description(topic.getDescription())
                         .title(topic.getTitle())
+                        .lessonName(lesson.getName())
                         .tests(mapTestsToTestDtos(topic.getTests()))
                         .build())
                 .collect(Collectors.toList());
