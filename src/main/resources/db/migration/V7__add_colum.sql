@@ -1,0 +1,2 @@
+ALTER TABLE lessons
+    ADD COLUMN level VARCHAR(500);

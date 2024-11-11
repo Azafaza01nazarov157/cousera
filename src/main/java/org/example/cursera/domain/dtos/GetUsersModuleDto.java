@@ -14,8 +14,6 @@ public class GetUsersModuleDto {
 
     private String name;
 
-    private String description;
-
     private String level;
 
     private List<LessonDto> lessons;

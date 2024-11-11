@@ -14,7 +14,7 @@ public interface LessonService {
      * @param lessonDescription Описание урока.
      * @return Объект LessonDto с деталями созданного урока.
      */
-    LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription);
+    LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription,String level);
 
     /**
      * Получить детали урока по его идентификатору.

@@ -12,7 +12,7 @@ public interface ModuleService {
      * @param courseId   Идентификатор курса.
      * @param moduleName Название нового модуля.
      */
-    void createModule(Long courseId, String moduleName, String description, String level);
+    void createModule(Long courseId, String moduleName);
 
     /**
      * Получить детали модуля по его идентификатору.

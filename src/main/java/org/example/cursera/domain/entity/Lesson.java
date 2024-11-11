@@ -19,6 +19,8 @@ public class Lesson {
     private String name;
     private String description;
 
+    private String level;
+
     @ManyToOne
     @JoinColumn(name = "module_id")
     private Module module;

@@ -28,14 +28,12 @@ public class ModuleServiceImpl implements ModuleService {
 
     @Override
     @Transactional
-    public void createModule(Long courseId, String moduleName, String description, String level) {
+    public void createModule(Long courseId, String moduleName) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Курс не найден")));
 
         Module module = Module.builder()
                 .name(moduleName)
-                .description(description)
-                .level(level)
                 .course(course)
                 .lessons(new ArrayList<>())
                 .build();
@@ -61,8 +59,6 @@ public class ModuleServiceImpl implements ModuleService {
         return GetUsersModuleDto.builder()
                 .id(module.getId())
                 .name(module.getName())
-                .description(module.getDescription())
-                .level(module.getLevel())
                 .lessons(lessonDtos)
                 .build();
     }
@@ -76,9 +72,6 @@ public class ModuleServiceImpl implements ModuleService {
         return ModuleUserDto.builder()
                 .id(module.getId())
                 .name(module.getName())
-                .description(module.getDescription())
-                .courseName(module.getCourse().getName())
-                .level(module.getLevel())
                 .build();
     }
 }

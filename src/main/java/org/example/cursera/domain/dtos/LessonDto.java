@@ -12,4 +12,6 @@ public class LessonDto {
     private String name;
     private String description;
     private Long moduleId;
+    private String moduleName;
+    private String level;
 }

@@ -32,11 +32,9 @@ public class ModuleController {
     @PostMapping("/{courseId}/create")
     public ResponseEntity<Void> createModule(
             @PathVariable Long courseId,
-            @RequestParam String moduleName,
-            @RequestParam String description,
-            @RequestParam String level) {
+            @RequestParam String moduleName) {
         try {
-            moduleService.createModule(courseId, moduleName, description, level);
+            moduleService.createModule(courseId, moduleName);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

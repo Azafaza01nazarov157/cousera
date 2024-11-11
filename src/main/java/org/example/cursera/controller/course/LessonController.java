@@ -1,12 +1,12 @@
 package org.example.cursera.controller.course;
 
-import org.example.cursera.domain.dtos.LessonDto;
-import org.example.cursera.exeption.NotFoundException;
-import org.example.cursera.service.course.LessonService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.example.cursera.domain.dtos.LessonDto;
+import org.example.cursera.exeption.NotFoundException;
+import org.example.cursera.service.course.LessonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +16,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/lessons")
 @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+@RequiredArgsConstructor
 public class LessonController {
 
     private final LessonService lessonService;
-
-    @Autowired
-    public LessonController(LessonService lessonService) {
-        this.lessonService = lessonService;
-    }
 
     @Operation(summary = "Create a new lesson", description = "Create a new lesson in the specified module.")
     @ApiResponses(value = {
@@ -34,12 +30,13 @@ public class LessonController {
     public ResponseEntity<LessonDto> createLesson(
             @PathVariable Long moduleId,
             @RequestParam String lessonName,
-            @RequestParam String lessonDescription) {
+            @RequestParam String lessonDescription,
+            @RequestParam String level) {
         try {
-            LessonDto createdLesson = lessonService.createLesson(moduleId, lessonName, lessonDescription);
-            return ResponseEntity.status(201).body(createdLesson);
-        } catch (Exception e) {
-            return ResponseEntity.status(404).build();
+            LessonDto createdLesson = lessonService.createLesson(moduleId, lessonName, lessonDescription,level);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdLesson);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
@@ -52,12 +49,9 @@ public class LessonController {
     public ResponseEntity<LessonDto> findLessonById(@PathVariable Long lessonId) {
         try {
             LessonDto lessonDto = lessonService.findLessonById(lessonId);
-            if (lessonDto == null) {
-                return ResponseEntity.notFound().build();
-            }
             return ResponseEntity.ok(lessonDto);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
@@ -71,11 +65,10 @@ public class LessonController {
         try {
             List<LessonDto> lessons = lessonService.getLessonsByModuleId(moduleId);
             return ResponseEntity.ok(lessons);
-        } catch (Exception e) {
-            return ResponseEntity.status(404).build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
 
     @Operation(summary = "Delete a lesson", description = "Delete a lesson by its ID.")
     @ApiResponses(value = {

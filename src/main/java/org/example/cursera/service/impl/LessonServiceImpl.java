@@ -27,60 +27,71 @@ public class LessonServiceImpl implements LessonService {
 
     @Override
     @Transactional
-    public LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription) {
+    public LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription,String level) {
         Module module = moduleRepository.findById(moduleId)
-                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Модуль не найден")));
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Module with ID " + moduleId + " not found")));
 
         Lesson lesson = Lesson.builder()
                 .name(lessonName)
                 .description(lessonDescription)
                 .module(module)
+                .level(level)
                 .topics(Collections.emptyList())
                 .build();
 
         lessonRepository.save(lesson);
-        log.info("Урок '{}' создан в модуле '{}'", lessonName, module.getName());
+        log.info("Lesson '{}' created in module '{}'", lessonName, module.getName());
 
         return LessonDto.builder()
                 .id(lesson.getId())
                 .name(lesson.getName())
                 .description(lesson.getDescription())
                 .moduleId(module.getId())
+                .moduleName(module.getName())
+                .level(lesson.getLevel())
                 .build();
     }
 
     @Override
     public LessonDto findLessonById(Long lessonId) {
         Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Урок не найден")));
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found")));
 
+        Module module = lesson.getModule();
         return LessonDto.builder()
                 .id(lesson.getId())
                 .name(lesson.getName())
                 .description(lesson.getDescription())
-                .moduleId(lesson.getModule().getId())
+                .moduleId(module.getId())
+                .moduleName(module.getName())
+                .level(lesson.getLevel())
                 .build();
     }
 
     @Override
     public List<LessonDto> getLessonsByModuleId(Long moduleId) {
         return lessonRepository.findByModuleId(moduleId).stream()
-                .map(lesson -> LessonDto.builder()
-                        .id(lesson.getId())
-                        .name(lesson.getName())
-                        .description(lesson.getDescription())
-                        .moduleId(lesson.getModule().getId())
-                        .build())
+                .map(lesson -> {
+                    Module module = lesson.getModule();
+                    return LessonDto.builder()
+                            .id(lesson.getId())
+                            .name(lesson.getName())
+                            .description(lesson.getDescription())
+                            .moduleId(module.getId())
+                            .moduleName(module.getName())
+                            .level(lesson.getLevel())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
-
 
     @Override
     @Transactional
     public void deleteLesson(Long lessonId) {
         if (!lessonRepository.existsById(lessonId)) {
-            throw new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found."));
+            throw new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found"));
         }
         lessonRepository.deleteById(lessonId);
+        log.info("Lesson with ID '{}' has been deleted", lessonId);
     }
 }
