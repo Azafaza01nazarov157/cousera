@@ -2,6 +2,7 @@ package org.example.cursera.service.course;
 
 import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.TestResultDto;
+import org.example.cursera.domain.dtos.TestSubmissionDto;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ public interface TestService {
 
     List<TestDto> getTestsByTopicId(Long topicId);
 
-    TestResultDto takeTest(Long testId, String selectedOption, Long userId);
+    TestResultDto takeTest(List<TestSubmissionDto> submissions, Long userId);
 
     List<TestResultDto> getUserResultsByTopic(Long userId, Long topicId);
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.TestResultDto;
+import org.example.cursera.domain.dtos.TestSubmissionDto;
 import org.example.cursera.service.course.TestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,16 +68,14 @@ public class TestController {
             @ApiResponse(responseCode = "404", description = "Тест или пользователь не найден")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
-    @PostMapping("/{testId}/take")
+    @PostMapping("/take")
     public ResponseEntity<TestResultDto> takeTest(
-            @Parameter(description = "ID теста") @PathVariable Long testId,
-            @Parameter(description = "Выбранный вариант ответа") @RequestParam String selectedOption,
-            @Parameter(description = "ID пользователя") @RequestParam Long userId) {
+            @RequestBody List<TestSubmissionDto> submissions,
+            @RequestParam Long userId) {
 
-        TestResultDto testResultDto = testService.takeTest(testId, selectedOption, userId);
+        TestResultDto testResultDto = testService.takeTest(submissions, userId);
         return new ResponseEntity<>(testResultDto, HttpStatus.OK);
     }
-
 
     @Operation(summary = "Получение результатов тестов для пользователя по теме", description = "Возвращает результаты тестов для указанной темы и пользователя")
     @ApiResponses({
