@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -175,5 +176,45 @@ public class ModeratorServiceImpl implements ModeratorService {
                 .moderatorId(course.getModeratorId())
                 .build();
     }
+
+    @Override
+    @Transactional
+    public void removeSubscriberFromCourse(Long courseId, Long userId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Course not found")));
+
+        log.info("Searching for SubscriptionRequest(s) with userId={}, courseId={}", userId, courseId);
+        List<SubscriptionRequest> subscriptionRequests = subscriptionRequestRepository
+                .findByUserIdAndCourseIdAndStatus(userId, courseId, RequestStatus.APPROVED.name());
+
+        if (!subscriptionRequests.isEmpty()) {
+            log.info("Found SubscriptionRequest(s): {}", subscriptionRequests);
+
+            subscriptionRequestRepository.deleteAll(subscriptionRequests);
+
+            course.getSubscribers().removeIf(user -> user.getId().equals(userId));
+            courseRepository.save(course);
+
+            log.info("Subscriber '{}' removed from course '{}'", userId, course.getName());
+        } else {
+            log.info("No SubscriptionRequest found for userId={}, courseId={}", userId, courseId);
+            throw new NotFoundException(new ErrorDto("404", "Subscription request not found"));
+        }
+    }
+
+    @Override
+    public List<SubscriberDto> getAllStatusPENDING(Long courseId) {
+        return subscriptionRequestRepository.findByCourseIdAndStatus(courseId, RequestStatus.PENDING)
+                .stream()
+                .map(subscriptionRequest -> new SubscriberDto(
+                        subscriptionRequest.getUser().getId(),
+                        subscriptionRequest.getUser().getUsername(),
+                        subscriptionRequest.getUser().getEmail(),
+                        subscriptionRequest.getUser().getRole().toString(),
+                        subscriptionRequest.getId()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
 }

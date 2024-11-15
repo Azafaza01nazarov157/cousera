@@ -57,4 +57,8 @@ public interface ModeratorService {
      * @return Список объектов GetCourseDto.
      */
     List<CourseDto> getCoursesByModeratorId(Long moderatorId);
+
+    List<SubscriberDto> getAllStatusPENDING(Long courseId);
+
+    void removeSubscriberFromCourse(Long courseId, Long userId);
 }

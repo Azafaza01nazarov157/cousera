@@ -12,4 +12,5 @@ public class SubscriberDto {
     private String username;
     private String email;
     private String role;
+    private Long requestId;
 }

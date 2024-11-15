@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.cursera.domain.dtos.CourseDto;
 import org.example.cursera.domain.dtos.GetCourseDto;
 import org.example.cursera.domain.dtos.SubscriberDto;
+import org.example.cursera.domain.enums.RequestStatus;
+import org.example.cursera.domain.repository.SubscriptionRequestRepository;
 import org.example.cursera.exeption.ForbiddenException;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.user.ModeratorService;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/moderator")
@@ -24,11 +27,11 @@ import java.util.List;
 public class ModeratorController {
     private final ModeratorService moderatorService;
 
-    @Operation(summary = "Add a subscriber to a course", description = "Adds a user as a subscriber to a specified course.")
+    @Operation(summary = "Добавить подписчика на курс", description = "Добавляет пользователя как подписчика на указанный курс.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User subscribed to course successfully"),
-            @ApiResponse(responseCode = "404", description = "Moderator, course, or user not found"),
-            @ApiResponse(responseCode = "403", description = "Access denied: user is not a moderator")
+            @ApiResponse(responseCode = "200", description = "Пользователь успешно подписан на курс"),
+            @ApiResponse(responseCode = "404", description = "Модератор, курс или пользователь не найден"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен: пользователь не является модератором")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/add-subscriber")
@@ -38,7 +41,7 @@ public class ModeratorController {
             @RequestParam Long userId) {
         try {
             moderatorService.addSubscriberToCourse(moderatorId, courseId, userId);
-            return ResponseEntity.ok("User subscribed to course successfully.");
+            return ResponseEntity.ok("Пользователь успешно подписан на курс.");
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (ForbiddenException e) {
@@ -46,10 +49,10 @@ public class ModeratorController {
         }
     }
 
-    @Operation(summary = "Find a course by ID", description = "Retrieves a course by its unique identifier.")
+    @Operation(summary = "Найти курс по ID", description = "Получает курс по его уникальному идентификатору.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Course found"),
-            @ApiResponse(responseCode = "404", description = "Course not found")
+            @ApiResponse(responseCode = "200", description = "Курс найден"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/course/{courseId}")
@@ -62,10 +65,10 @@ public class ModeratorController {
         }
     }
 
-    @Operation(summary = "Get all subscribers of a course", description = "Retrieves all subscribers for a specified course.")
+    @Operation(summary = "Получить всех подписчиков курса", description = "Получает всех подписчиков для указанного курса.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Subscribers retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Course not found")
+            @ApiResponse(responseCode = "200", description = "Подписчики успешно получены"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/{courseId}/all/subscribers")
@@ -78,11 +81,11 @@ public class ModeratorController {
         }
     }
 
-    @Operation(summary = "Approve subscription request", description = "Allows a moderator to approve a subscription request")
+    @Operation(summary = "Одобрить запрос на подписку", description = "Позволяет модератору одобрить запрос на подписку.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Subscription approved successfully"),
-            @ApiResponse(responseCode = "404", description = "Subscription request not found"),
-            @ApiResponse(responseCode = "403", description = "Access denied or subscription limit reached")
+            @ApiResponse(responseCode = "200", description = "Подписка успешно одобрена"),
+            @ApiResponse(responseCode = "404", description = "Запрос на подписку не найден"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен или достигнут лимит подписок")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/{courseId}/approve-request/{requestId}")
@@ -91,7 +94,7 @@ public class ModeratorController {
             @PathVariable Long requestId) {
         try {
             moderatorService.approveSubscription(courseId, requestId);
-            return ResponseEntity.ok("Subscription approved successfully");
+            return ResponseEntity.ok("Подписка успешно одобрена");
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (ForbiddenException e) {
@@ -99,10 +102,10 @@ public class ModeratorController {
         }
     }
 
-    @Operation(summary = "Reject subscription request", description = "Allows a moderator to reject a subscription request")
+    @Operation(summary = "Отклонить запрос на подписку", description = "Позволяет модератору отклонить запрос на подписку.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Subscription rejected successfully"),
-            @ApiResponse(responseCode = "404", description = "Subscription request not found")
+            @ApiResponse(responseCode = "200", description = "Подписка успешно отклонена"),
+            @ApiResponse(responseCode = "404", description = "Запрос на подписку не найден")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @PostMapping("/{courseId}/reject-request/{requestId}")
@@ -111,16 +114,16 @@ public class ModeratorController {
             @PathVariable Long requestId) {
         try {
             moderatorService.rejectSubscription(courseId, requestId);
-            return ResponseEntity.ok("Subscription rejected successfully");
+            return ResponseEntity.ok("Подписка успешно отклонена");
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
-    @Operation(summary = "Get all courses by moderator", description = "Retrieve all courses managed by a specific moderator.")
+    @Operation(summary = "Получить все курсы модератора", description = "Получает все курсы, управляемые указанным модератором.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Courses retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No courses found for the specified moderator")
+            @ApiResponse(responseCode = "200", description = "Курсы успешно получены"),
+            @ApiResponse(responseCode = "404", description = "Курсы для указанного модератора не найдены")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
     @GetMapping("/moderators/{moderatorId}/courses")
@@ -136,4 +139,40 @@ public class ModeratorController {
         }
     }
 
+    @Operation(summary = "Удалить подписчика с курса", description = "Позволяет модератору удалить подписчика с указанного курса.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Подписчик успешно удален"),
+            @ApiResponse(responseCode = "404", description = "Запрос на подписку или курс не найден")
+    })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @DeleteMapping("/{courseId}/remove-subscriber/{userId}")
+    public ResponseEntity<String> removeSubscriberFromCourse(
+            @PathVariable Long courseId,
+            @PathVariable Long userId) {
+        try {
+            moderatorService.removeSubscriberFromCourse(courseId, userId);
+            return ResponseEntity.ok("Подписчик успешно удален");
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Получить всех подписчиков со статусом PENDING", description = "Получает всех подписчиков указанного курса, у которых статус PENDING.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Подписчики со статусом PENDING успешно получены"),
+            @ApiResponse(responseCode = "404", description = "Курс не найден или нет подписчиков со статусом PENDING")
+    })
+    @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
+    @GetMapping("/courses/{courseId}/pending-subscribers")
+    public ResponseEntity<List<SubscriberDto>> getAllStatusPENDING(@PathVariable Long courseId) {
+        try {
+            List<SubscriberDto> pendingSubscribers = moderatorService.getAllStatusPENDING(courseId);
+            if (pendingSubscribers.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(pendingSubscribers);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
