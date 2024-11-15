@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class TestDto {
     private Long id;
-    private String question;
+    private String  question;
     private List<String> options;
     private String correctOption;
     private Long topicId;

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.example.cursera.domain.dtos.LessonDto;
+import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.LessonService;
 import org.springframework.http.HttpStatus;
@@ -82,6 +83,21 @@ public class LessonController {
             return ResponseEntity.noContent().build();
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @Operation(summary = "Get all tests for a lesson", description = "Retrieve all tests associated with a specific lesson ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tests retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Lesson not found")
+    })
+    @GetMapping("/{lessonId}/tests")
+    public ResponseEntity<List<TestDto>> getTestsByLessonId(@PathVariable Long lessonId) {
+        try {
+            List<TestDto> tests = lessonService.getTestsByLessonId(lessonId);
+            return ResponseEntity.ok(tests);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 }

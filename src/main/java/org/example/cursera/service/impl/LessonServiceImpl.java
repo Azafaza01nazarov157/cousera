@@ -3,9 +3,11 @@ package org.example.cursera.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.cursera.domain.dtos.LessonDto;
+import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
 import org.example.cursera.domain.entity.Lesson;
 import org.example.cursera.domain.entity.Module;
+import org.example.cursera.domain.entity.Test;
 import org.example.cursera.domain.repository.LessonRepository;
 import org.example.cursera.domain.repository.ModuleRepository;
 import org.example.cursera.exeption.NotFoundException;
@@ -94,4 +96,27 @@ public class LessonServiceImpl implements LessonService {
         lessonRepository.deleteById(lessonId);
         log.info("Lesson with ID '{}' has been deleted", lessonId);
     }
+
+
+    @Override
+    public List<TestDto> getTestsByLessonId(Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404","Lesson with ID " + lessonId + " not found")));
+
+        return lesson.getTopics().stream()
+                .flatMap(topic -> topic.getTests().stream())
+                .map(this::mapToTestDto)
+                .collect(Collectors.toList());
+    }
+
+    private TestDto mapToTestDto(Test test) {
+        return TestDto.builder()
+                .id(test.getId())
+                .question(test.getQuestion())
+                .options(List.of(test.getOption1(), test.getOption2(), test.getOption3(), test.getOption4()))
+                .correctOption(test.getCorrectOption())
+                .topicId(test.getTopic().getId())
+                .build();
+    }
+
 }

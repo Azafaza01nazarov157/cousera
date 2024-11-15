@@ -1,6 +1,7 @@
 package org.example.cursera.service.course;
 
 import org.example.cursera.domain.dtos.LessonDto;
+import org.example.cursera.domain.dtos.TestDto;
 
 import java.util.List;
 
@@ -38,4 +39,6 @@ public interface LessonService {
      * @param lessonId Идентификатор урока.
      */
     void deleteLesson(Long lessonId);
+
+    List<TestDto> getTestsByLessonId(Long lessonId);
 }
