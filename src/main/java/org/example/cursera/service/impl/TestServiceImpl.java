@@ -149,6 +149,8 @@ public class TestServiceImpl implements TestService {
                 ? testResults.stream().mapToInt(TestResult::getScore).average().orElse(0.0)
                 : 0.0;
 
+
+        log.info("Халдыбек чорт");
         log.info("Aggregated results for lesson '{}': Total Questions = {}, Correct = {}, Incorrect = {}, Percentage = {}",
                 lessonId, totalQuestions, correctAnswers, incorrectAnswers, overallPercentage);
 
