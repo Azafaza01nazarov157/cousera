@@ -2,18 +2,13 @@ package org.example.cursera.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.cursera.domain.dtos.LessonTestResultsSummaryDto;
 import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.TestResultDto;
 import org.example.cursera.domain.dtos.TestSubmissionDto;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
-import org.example.cursera.domain.entity.Test;
-import org.example.cursera.domain.entity.Topic;
-import org.example.cursera.domain.entity.TestResult;
-import org.example.cursera.domain.entity.User;
-import org.example.cursera.domain.repository.TestRepository;
-import org.example.cursera.domain.repository.TopicRepository;
-import org.example.cursera.domain.repository.TestResultRepository;
-import org.example.cursera.domain.repository.UserRepository;
+import org.example.cursera.domain.entity.*;
+import org.example.cursera.domain.repository.*;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.TestService;
 import org.springframework.stereotype.Service;
@@ -31,6 +26,7 @@ public class TestServiceImpl implements TestService {
     private final TopicRepository topicRepository;
     private final TestResultRepository testResultRepository;
     private final UserRepository userRepository;
+    private final LessonRepository lessonRepository;
 
     @Override
     @Transactional
@@ -129,6 +125,40 @@ public class TestServiceImpl implements TestService {
                 .isCorrect(result.getScore() > 0) // Assuming score > 0 indicates a correct answer
                 .build()
         ).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public LessonTestResultsSummaryDto getTestResultsSummaryByLessonAndUserId(Long lessonId, Long userId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found")));
+
+        List<Test> tests = lesson.getTopics().stream()
+                .flatMap(topic -> topic.getTests().stream())
+                .toList();
+        List<TestResult> testResults = tests.stream()
+                .flatMap(test -> testResultRepository.findByTestAndUserId(test, userId).stream())
+                .toList();
+
+        int totalQuestions = testResults.size();
+        int correctAnswers = (int) testResults.stream()
+                .filter(result -> result.getScore() == 100)
+                .count();
+        int incorrectAnswers = totalQuestions - correctAnswers;
+        double overallPercentage = totalQuestions > 0
+                ? testResults.stream().mapToInt(TestResult::getScore).average().orElse(0.0)
+                : 0.0;
+
+        log.info("Aggregated results for lesson '{}': Total Questions = {}, Correct = {}, Incorrect = {}, Percentage = {}",
+                lessonId, totalQuestions, correctAnswers, incorrectAnswers, overallPercentage);
+
+        return LessonTestResultsSummaryDto.builder()
+                .lessonId(lessonId)
+                .totalQuestions(totalQuestions)
+                .correctAnswers(correctAnswers)
+                .incorrectAnswers(incorrectAnswers)
+                .overallPercentage(overallPercentage)
+                .build();
     }
 
 }

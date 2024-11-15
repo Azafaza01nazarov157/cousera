@@ -1,5 +1,6 @@
 package org.example.cursera.service.course;
 
+import org.example.cursera.domain.dtos.LessonTestResultsSummaryDto;
 import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.TestResultDto;
 import org.example.cursera.domain.dtos.TestSubmissionDto;
@@ -14,4 +15,6 @@ public interface TestService {
     TestResultDto takeTest(List<TestSubmissionDto> submissions, Long userId);
 
     List<TestResultDto> getUserResultsByTopic(Long userId, Long topicId);
+
+    LessonTestResultsSummaryDto getTestResultsSummaryByLessonAndUserId(Long lessonId, Long userId);
 }

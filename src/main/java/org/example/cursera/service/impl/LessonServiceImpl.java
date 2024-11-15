@@ -101,7 +101,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public List<TestDto> getTestsByLessonId(Long lessonId) {
         Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new NotFoundException(new ErrorDto("404","Lesson with ID " + lessonId + " not found")));
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found")));
 
         return lesson.getTopics().stream()
                 .flatMap(topic -> topic.getTests().stream())

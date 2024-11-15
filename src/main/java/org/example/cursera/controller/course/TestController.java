@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.example.cursera.domain.dtos.LessonTestResultsSummaryDto;
 import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.TestResultDto;
 import org.example.cursera.domain.dtos.TestSubmissionDto;
+import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.TestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,6 +92,25 @@ public class TestController {
 
         List<TestResultDto> results = testService.getUserResultsByTopic(userId, topicId);
         return ResponseEntity.ok(results);
+    }
+
+
+    @Operation(summary = "Get test results summary for a lesson and user", description = "Retrieve a summary of test results associated with a specific lesson ID and user ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Test results summary retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Lesson or User not found")
+    })
+    @GetMapping("/{lessonId}/test-results-summary/{userId}")
+    public ResponseEntity<LessonTestResultsSummaryDto> getTestResultsSummaryByLessonAndUserId(
+            @PathVariable Long lessonId,
+            @PathVariable Long userId
+    ) {
+        try {
+            LessonTestResultsSummaryDto summary = testService.getTestResultsSummaryByLessonAndUserId(lessonId, userId);
+            return ResponseEntity.ok(summary);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
 }
