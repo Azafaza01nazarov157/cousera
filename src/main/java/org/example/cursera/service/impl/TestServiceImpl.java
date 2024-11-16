@@ -142,14 +142,14 @@ public class TestServiceImpl implements TestService {
 
         int totalQuestions = testResults.size();
         int correctAnswers = (int) testResults.stream()
-                .filter(result -> result.getScore() == 100)
+                .filter(TestResult::isCorrect)
                 .count();
         int incorrectAnswers = totalQuestions - correctAnswers;
         double overallPercentage = totalQuestions > 0
                 ? (correctAnswers * 100.0) / totalQuestions
                 : 0.0;
 
-        log.info("Aggregated results for lesson '{}': Total Questions = {}, Correct = {}, Incorrect = {}, Percentage = {}",
+        log.info("Aggregated results for lesson '{}': Total Questions = {}, Correct = {}, Incorrect = {}, Percentage = {}%",
                 lessonId, totalQuestions, correctAnswers, incorrectAnswers, overallPercentage);
 
         return LessonTestResultsSummaryDto.builder()
@@ -157,7 +157,7 @@ public class TestServiceImpl implements TestService {
                 .totalQuestions(totalQuestions)
                 .correctAnswers(correctAnswers)
                 .incorrectAnswers(incorrectAnswers)
-                .overallPercentage((int) overallPercentage)
+                .overallPercentage((int) Math.round(overallPercentage))
                 .build();
     }
 
