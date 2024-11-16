@@ -10,5 +10,5 @@ public class LessonTestResultsSummaryDto {
     private int totalQuestions;
     private int correctAnswers;
     private int incorrectAnswers;
-    private double overallPercentage;
+    private int overallPercentage;
 }

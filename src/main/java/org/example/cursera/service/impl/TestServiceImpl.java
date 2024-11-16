@@ -157,7 +157,7 @@ public class TestServiceImpl implements TestService {
                 .totalQuestions(totalQuestions)
                 .correctAnswers(correctAnswers)
                 .incorrectAnswers(incorrectAnswers)
-                .overallPercentage(overallPercentage)
+                .overallPercentage((int) overallPercentage)
                 .build();
     }
 
