@@ -2,15 +2,9 @@ package org.example.cursera.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.cursera.domain.dtos.CourseStatisticsDto;
-import org.example.cursera.domain.entity.Course;
-import org.example.cursera.domain.entity.Lesson;
-import org.example.cursera.domain.entity.SubscriptionRequest;
-import org.example.cursera.domain.entity.TestResult;
-import org.example.cursera.domain.entity.User;
+import org.example.cursera.domain.entity.*;
 import org.example.cursera.domain.repository.CourseRepository;
 import org.example.cursera.domain.repository.LessonRepository;
-import org.example.cursera.domain.repository.SubscriptionRequestRepository;
-import org.example.cursera.domain.repository.TestResultRepository;
 import org.example.cursera.domain.repository.UserRepository;
 import org.example.cursera.service.analysis.AnalysisService;
 import org.springframework.stereotype.Service;
@@ -44,15 +38,44 @@ public class AnalysisServiceImpl implements AnalysisService {
             List<Lesson> completedLessons = lessonRepository.findCompletedLessonsByUserAndCourse(userId, course.getId());
             int completedCount = completedLessons.size();
 
+            boolean isCourseCompleted = totalLessons > 0 && totalLessons == completedCount;
+
+            int remainingLessons = totalLessons - completedCount;
+
             double completionPercentage = (totalLessons > 0) ? (completedCount * 100.0 / totalLessons) : 0;
+
+            List<Test> tests = allLessons.stream()
+                    .flatMap(lesson -> lesson.getTopics().stream())
+                    .flatMap(topic -> topic.getTests().stream())
+                    .collect(Collectors.toList());
+
+            List<TestResult> testResults = tests.stream()
+                    .flatMap(test -> test.getTestResults().stream())
+                    .filter(result -> result.getUser().getId().equals(userId))
+                    .collect(Collectors.toList());
+
+            double averageTestScore = testResults.stream()
+                    .mapToInt(TestResult::getScore)
+                    .average()
+                    .orElse(0.0);
+
+            long successfulTests = testResults.stream()
+                    .filter(TestResult::isCorrect)
+                    .count();
+            double testSuccessPercentage = (tests.size() > 0) ? (successfulTests * 100.0 / tests.size()) : 0;
+
+            String subscriptionStatus = isCourseCompleted ? "COMPLETED" : "IN_PROGRESS";
 
             return CourseStatisticsDto.builder()
                     .email(user.getEmail())
                     .courseName(course.getName())
                     .totalLessons(totalLessons)
                     .completedLessons(completedCount)
+                    .remainingLessons(remainingLessons)
                     .completionPercentage(completionPercentage)
-                    .subscriptionStatus("SUBSCRIBED")
+                    .averageTestScore(averageTestScore)
+                    .testSuccessPercentage(testSuccessPercentage)
+                    .subscriptionStatus(subscriptionStatus)
                     .build();
         }).collect(Collectors.toList());
     }
