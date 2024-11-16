@@ -13,9 +13,9 @@ import java.util.List;
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
     Collection<Lesson> findByModuleId(Long moduleId);
 
-    @Query("SELECT l FROM Lesson l JOIN l.module m WHERE m.course.id = :courseId")
+    @Query("SELECT l FROM Lesson l WHERE l.module.course.id = :courseId")
     List<Lesson> findByCourseId(@Param("courseId") Long courseId);
 
-    @Query("SELECT l FROM Lesson l JOIN l.module m JOIN Analysis a ON a.lesson.id = l.id WHERE m.course.id = :courseId AND a.user.id = :userId")
+    @Query("SELECT l FROM Lesson l JOIN l.completedByUsers u WHERE u.id = :userId AND l.module.course.id = :courseId")
     List<Lesson> findCompletedLessonsByUserAndCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);
 }

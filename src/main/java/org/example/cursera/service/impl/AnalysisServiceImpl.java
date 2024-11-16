@@ -43,30 +43,6 @@ public class AnalysisServiceImpl implements AnalysisService {
 
             double completionPercentage = (totalLessons > 0) ? (completedCount * 100.0 / totalLessons) : 0;
 
-            List<Test> allTests = allLessons.stream()
-                    .flatMap(lesson -> lesson.getTopics().stream())
-                    .flatMap(topic -> topic.getTests().stream())
-                    .collect(Collectors.toList());
-            int totalTests = allTests.size();
-
-            List<TestResult> testResults = allTests.stream()
-                    .flatMap(test -> test.getTestResults().stream())
-                    .filter(result -> result.getUser().getId().equals(userId))
-                    .collect(Collectors.toList());
-
-            long successfulTests = testResults.stream()
-                    .filter(TestResult::isCorrect)
-                    .count();
-
-            double testSuccessPercentage = (totalTests > 0) ? (successfulTests * 100.0 / totalTests) : 0;
-
-            double averageTestScore = testResults.stream()
-                    .mapToInt(TestResult::getScore)
-                    .average()
-                    .orElse(0.0);
-
-            String subscriptionStatus = isCourseCompleted ? "COMPLETED" : "IN_PROGRESS";
-
             return CourseStatisticsDto.builder()
                     .email(user.getEmail())
                     .courseName(course.getName())
@@ -74,9 +50,7 @@ public class AnalysisServiceImpl implements AnalysisService {
                     .completedLessons(completedCount)
                     .remainingLessons(remainingLessons)
                     .completionPercentage(completionPercentage)
-                    .averageTestScore(averageTestScore)
-                    .testSuccessPercentage(testSuccessPercentage)
-                    .subscriptionStatus(subscriptionStatus)
+                    .subscriptionStatus(isCourseCompleted ? "COMPLETED" : "IN_PROGRESS")
                     .build();
         }).collect(Collectors.toList());
     }

@@ -27,4 +27,12 @@ public class Lesson {
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
     private List<Topic> topics;
+
+    @ManyToMany
+    @JoinTable(
+            name = "completed_lessons",
+            joinColumns = @JoinColumn(name = "lesson_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> completedByUsers;
 }

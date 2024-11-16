@@ -102,6 +102,22 @@ public class TestServiceImpl implements TestService {
 
         double overallPercentage = (totalCorrect / (double) totalQuestions) * 100;
 
+        Test test = testRepository.findById(submissions.get(0).getTestId())
+                .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Test not found for ID " + submissions.get(0).getTestId())));
+        Lesson lesson = test.getTopic().getLesson();
+
+        boolean allTestsCompleted = lesson.getTopics().stream()
+                .flatMap(topic -> topic.getTests().stream())
+                .allMatch(t -> testResultRepository.findByTestAndUserId(t, userId)
+                        .stream().anyMatch(TestResult::isCorrect));
+
+        if (allTestsCompleted) {
+            if (!lesson.getCompletedByUsers().contains(user)) {
+                lesson.getCompletedByUsers().add(user);
+                lessonRepository.saveAndFlush(lesson);
+                log.info("User with ID '{}' has completed lesson '{}'", userId, lesson.getName());
+            }
+        }
         log.info("User with ID '{}' took multiple tests and scored '{}' out of '{}'", userId, totalCorrect, totalQuestions);
 
         return TestResultDto.builder()
