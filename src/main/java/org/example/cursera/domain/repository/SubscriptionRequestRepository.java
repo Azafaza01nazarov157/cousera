@@ -26,4 +26,5 @@ public interface SubscriptionRequestRepository extends JpaRepository<Subscriptio
     @Query(value = "SELECT * FROM subscription_requests WHERE user_id = :userId AND course_id = :courseId AND status = :status", nativeQuery = true)
     List<SubscriptionRequest> findByUserIdAndCourseIdAndStatus(@Param("userId") Long userId, @Param("courseId") Long courseId, @Param("status") String status);
 
+    List<SubscriptionRequest> findByUserIdAndCourseId(Long userId, Long courseId);
 }

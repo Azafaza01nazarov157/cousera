@@ -3,6 +3,8 @@ package org.example.cursera.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -24,4 +26,7 @@ public class Test {
     @ManyToOne
     @JoinColumn(name = "topic_id")
     private Topic topic;
+
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)
+    private List<TestResult> testResults;
 }

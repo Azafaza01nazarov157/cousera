@@ -3,6 +3,8 @@ package org.example.cursera.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -29,4 +31,8 @@ public class TestResult {
 
     @Column(name = "is_correct")
     private boolean isCorrect;
+
+    @ManyToOne
+    @JoinColumn(name = "lesson_id")
+    private Lesson lesson;
 }
