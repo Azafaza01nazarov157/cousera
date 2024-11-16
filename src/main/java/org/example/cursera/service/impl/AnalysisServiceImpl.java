@@ -20,7 +20,6 @@ public class AnalysisServiceImpl implements AnalysisService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
 
-
     @Override
     public List<CourseStatisticsDto> analyzeSubscribedCourses(Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
@@ -44,25 +43,27 @@ public class AnalysisServiceImpl implements AnalysisService {
 
             double completionPercentage = (totalLessons > 0) ? (completedCount * 100.0 / totalLessons) : 0;
 
-            List<Test> tests = allLessons.stream()
+            List<Test> allTests = allLessons.stream()
                     .flatMap(lesson -> lesson.getTopics().stream())
                     .flatMap(topic -> topic.getTests().stream())
                     .collect(Collectors.toList());
+            int totalTests = allTests.size();
 
-            List<TestResult> testResults = tests.stream()
+            List<TestResult> testResults = allTests.stream()
                     .flatMap(test -> test.getTestResults().stream())
                     .filter(result -> result.getUser().getId().equals(userId))
                     .collect(Collectors.toList());
+
+            long successfulTests = testResults.stream()
+                    .filter(TestResult::isCorrect)
+                    .count();
+
+            double testSuccessPercentage = (totalTests > 0) ? (successfulTests * 100.0 / totalTests) : 0;
 
             double averageTestScore = testResults.stream()
                     .mapToInt(TestResult::getScore)
                     .average()
                     .orElse(0.0);
-
-            long successfulTests = testResults.stream()
-                    .filter(TestResult::isCorrect)
-                    .count();
-            double testSuccessPercentage = (tests.size() > 0) ? (successfulTests * 100.0 / tests.size()) : 0;
 
             String subscriptionStatus = isCourseCompleted ? "COMPLETED" : "IN_PROGRESS";
 
