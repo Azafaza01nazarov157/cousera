@@ -146,7 +146,7 @@ public class TestServiceImpl implements TestService {
                 .count();
         int incorrectAnswers = totalQuestions - correctAnswers;
         double overallPercentage = totalQuestions > 0
-                ? testResults.stream().mapToInt(TestResult::getScore).average().orElse(100.0)
+                ? (correctAnswers * 100.0) / totalQuestions
                 : 0.0;
 
         log.info("Aggregated results for lesson '{}': Total Questions = {}, Correct = {}, Incorrect = {}, Percentage = {}",
@@ -157,7 +157,7 @@ public class TestServiceImpl implements TestService {
                 .totalQuestions(totalQuestions)
                 .correctAnswers(correctAnswers)
                 .incorrectAnswers(incorrectAnswers)
-                .overallPercentage(overallPercentage * 100)
+                .overallPercentage(overallPercentage)
                 .build();
     }
 
