@@ -23,7 +23,7 @@ public class MinioConfig {
                 .credentials(miniProp.getAccessKey(), miniProp.getSecretKey())
                 .build();
 
-        createBucketIfNotExists(minioClient, "coursera");
+        createBucketIfNotExists(minioClient, "cousera");
         return minioClient;
     }
 
