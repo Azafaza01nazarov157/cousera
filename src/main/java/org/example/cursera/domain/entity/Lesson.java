@@ -35,4 +35,8 @@ public class Lesson {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> completedByUsers;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "file_id", referencedColumnName = "id")
+    private MinioFile file;
 }

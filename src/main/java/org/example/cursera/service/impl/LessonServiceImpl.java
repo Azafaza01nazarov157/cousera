@@ -3,21 +3,25 @@ package org.example.cursera.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.cursera.domain.dtos.LessonDto;
+import org.example.cursera.domain.dtos.MinioFileDto;
 import org.example.cursera.domain.dtos.TestDto;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
-import org.example.cursera.domain.entity.Lesson;
+import org.example.cursera.domain.entity.*;
 import org.example.cursera.domain.entity.Module;
-import org.example.cursera.domain.entity.Test;
 import org.example.cursera.domain.repository.LessonRepository;
+import org.example.cursera.domain.repository.MinioFileRepository;
 import org.example.cursera.domain.repository.ModuleRepository;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.LessonService;
+import org.example.cursera.service.minio.MinioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -26,18 +30,30 @@ public class LessonServiceImpl implements LessonService {
 
     private final LessonRepository lessonRepository;
     private final ModuleRepository moduleRepository;
+    private final MinioService minioService;
+    private final MinioFileRepository minioFileRepository;
 
     @Override
     @Transactional
-    public LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription,String level) {
+    public LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription, String level, MultipartFile file) {
         Module module = moduleRepository.findById(moduleId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Module with ID " + moduleId + " not found")));
+
+        log.info("Received file: {}", file != null ? file.getOriginalFilename() : "No file uploaded");
+        MinioFile uploadedFile = null;
+        MinioFile uploadedImages = null;
+
+        // Upload file if present
+        if (file != null && !file.isEmpty()) {
+            uploadedFile = minioFileRepository.save(mapToEntity(minioService.uploadFile(file, "lessons/" + moduleId + "/files")));
+        }
 
         Lesson lesson = Lesson.builder()
                 .name(lessonName)
                 .description(lessonDescription)
                 .module(module)
                 .level(level)
+                .file(uploadedFile)
                 .topics(Collections.emptyList())
                 .build();
 
@@ -51,8 +67,10 @@ public class LessonServiceImpl implements LessonService {
                 .moduleId(module.getId())
                 .moduleName(module.getName())
                 .level(lesson.getLevel())
+                .fileUrl(uploadedFile != null ? uploadedFile.getFileUrl() : null)
                 .build();
     }
+
 
     @Override
     public LessonDto findLessonById(Long lessonId) {
@@ -60,6 +78,8 @@ public class LessonServiceImpl implements LessonService {
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found")));
 
         Module module = lesson.getModule();
+        MinioFile file = lesson.getFile();
+
         return LessonDto.builder()
                 .id(lesson.getId())
                 .name(lesson.getName())
@@ -67,14 +87,22 @@ public class LessonServiceImpl implements LessonService {
                 .moduleId(module.getId())
                 .moduleName(module.getName())
                 .level(lesson.getLevel())
+                .fileUrl(file != null ? file.getFileUrl() : null)
+                .fileName(file != null ? file.getFileName() : null)
+                .contentType(file != null ? file.getContentType() : null)
+                .fileSize(file != null ? file.getSize() : null)
+                .uploadedAt(file != null ? file.getUploadedAt() : null)
                 .build();
     }
+
+
 
     @Override
     public List<LessonDto> getLessonsByModuleId(Long moduleId) {
         return lessonRepository.findByModuleId(moduleId).stream()
                 .map(lesson -> {
                     Module module = lesson.getModule();
+                    MinioFile file = lesson.getFile();
                     return LessonDto.builder()
                             .id(lesson.getId())
                             .name(lesson.getName())
@@ -82,6 +110,7 @@ public class LessonServiceImpl implements LessonService {
                             .moduleId(module.getId())
                             .moduleName(module.getName())
                             .level(lesson.getLevel())
+                            .fileUrl(file != null ? file.getFileUrl() : "No file available")
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -118,5 +147,23 @@ public class LessonServiceImpl implements LessonService {
                 .topicId(test.getTopic().getId())
                 .build();
     }
+
+
+    private MinioFile mapToEntity(MinioFileDto fileDto) {
+        MinioFile file = new MinioFile();
+        file.setId(fileDto.getId());
+        file.setFileName(fileDto.getFileName());
+        file.setFileUrl(fileDto.getFileUrl());
+        file.setContentType(fileDto.getContentType());
+        file.setSize(fileDto.getSize());
+        file.setUploadedAt(fileDto.getUploadedAt());
+        if (fileDto.getUploadedById() != null) {
+            User uploadedBy = new User();
+            uploadedBy.setId(fileDto.getUploadedById());
+            file.setUploadedBy(uploadedBy);
+        }
+        return file;
+    }
+
 
 }

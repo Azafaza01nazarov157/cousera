@@ -11,6 +11,7 @@ import org.example.cursera.service.course.LessonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,19 +23,16 @@ public class LessonController {
 
     private final LessonService lessonService;
 
-    @Operation(summary = "Create a new lesson", description = "Create a new lesson in the specified module.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Lesson created successfully"),
-            @ApiResponse(responseCode = "404", description = "Module not found")
-    })
-    @PostMapping("/{moduleId}")
+    @PostMapping(value = "/{moduleId}", consumes = {"multipart/form-data"})
     public ResponseEntity<LessonDto> createLesson(
             @PathVariable Long moduleId,
             @RequestParam String lessonName,
             @RequestParam String lessonDescription,
-            @RequestParam String level) {
+            @RequestParam String level,
+            @RequestPart(required = false) MultipartFile file
+    ) {
         try {
-            LessonDto createdLesson = lessonService.createLesson(moduleId, lessonName, lessonDescription,level);
+            LessonDto createdLesson = lessonService.createLesson(moduleId, lessonName, lessonDescription, level, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdLesson);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

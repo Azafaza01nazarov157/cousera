@@ -2,6 +2,7 @@ package org.example.cursera.service.course;
 
 import org.example.cursera.domain.dtos.LessonDto;
 import org.example.cursera.domain.dtos.TestDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface LessonService {
      * @param lessonDescription Описание урока.
      * @return Объект LessonDto с деталями созданного урока.
      */
-    LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription,String level);
+    LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription, String level, MultipartFile file);
 
     /**
      * Получить детали урока по его идентификатору.
