@@ -32,7 +32,6 @@ public class MinioServiceImpl implements MinioService {
                 throw new IllegalArgumentException("File is empty");
             }
 
-            // Формируем имя файла с директорией
             String fileName = directory + "/" + file.getOriginalFilename();
 
             // Загружаем файл в MinIO
@@ -46,20 +45,14 @@ public class MinioServiceImpl implements MinioService {
             );
             log.info("File uploaded to MinIO: {}", fileName);
 
-            // Создаём сущность MinioFile для сохранения в базу данных
-            MinioFile minioFile = new MinioFile();
-            minioFile.setFileName(fileName);
-            minioFile.setFileUrl(miniProp.getMinioUrl() + "/" + miniProp.getBucketName() + "/" + fileName);
-            minioFile.setContentType(file.getContentType());
-            minioFile.setSize(file.getSize());
-            minioFile.setUploadedAt(LocalDateTime.now());
-
-            // Сохраняем файл в базе данных
-            MinioFile savedFile = minioFileRepository.save(minioFile);
-            log.info("File metadata saved to database: {}", savedFile);
-
-            // Преобразуем в DTO для возврата
-            return mapToDto(savedFile);
+            // Возвращаем данные файла
+            return MinioFileDto.builder()
+                    .fileName(fileName)
+                    .fileUrl(miniProp.getMinioUrl() + "/" + miniProp.getBucketName() + "/" + fileName)
+                    .contentType(file.getContentType())
+                    .size(file.getSize())
+                    .uploadedAt(LocalDateTime.now())
+                    .build();
 
         } catch (Exception e) {
             log.error("Error uploading file to MinIO", e);

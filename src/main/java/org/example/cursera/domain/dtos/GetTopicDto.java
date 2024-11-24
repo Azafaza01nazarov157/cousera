@@ -17,4 +17,5 @@ public class GetTopicDto {
     private String title;
     private String lessonName;
     private List<TestDto> tests;
+    private List<FileDto> files;
 }

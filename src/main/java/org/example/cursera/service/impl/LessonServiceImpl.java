@@ -11,6 +11,7 @@ import org.example.cursera.domain.entity.Module;
 import org.example.cursera.domain.repository.LessonRepository;
 import org.example.cursera.domain.repository.MinioFileRepository;
 import org.example.cursera.domain.repository.ModuleRepository;
+import org.example.cursera.domain.repository.TopicRepository;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.LessonService;
 import org.example.cursera.service.minio.MinioService;
@@ -32,34 +33,48 @@ public class LessonServiceImpl implements LessonService {
     private final ModuleRepository moduleRepository;
     private final MinioService minioService;
     private final MinioFileRepository minioFileRepository;
+    private final TopicRepository topicRepository;
 
     @Override
     @Transactional
     public LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription, String level, MultipartFile file) {
+        // Проверяем существование модуля
         Module module = moduleRepository.findById(moduleId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Module with ID " + moduleId + " not found")));
 
         log.info("Received file: {}", file != null ? file.getOriginalFilename() : "No file uploaded");
+
         MinioFile uploadedFile = null;
-        MinioFile uploadedImages = null;
 
-        // Upload file if present
-        if (file != null && !file.isEmpty()) {
-            uploadedFile = minioFileRepository.save(mapToEntity(minioService.uploadFile(file, "lessons/" + moduleId + "/files")));
-        }
-
-        Lesson lesson = Lesson.builder()
+        // Создаем урок
+        Lesson.LessonBuilder lessonBuilder = Lesson.builder()
                 .name(lessonName)
                 .description(lessonDescription)
                 .module(module)
                 .level(level)
-                .file(uploadedFile)
-                .topics(Collections.emptyList())
-                .build();
+                .topics(Collections.emptyList()); // Создаем пустой список тем
 
+        // Если файл загружен, загружаем его в MinIO и сохраняем данные
+        if (file != null && !file.isEmpty()) {
+            MinioFileDto fileDto = minioService.uploadFile(file, "lessons/" + moduleId + "/files");
+            uploadedFile = mapToEntity(fileDto);
+
+            // Сохраняем данные о файле для урока
+            uploadedFile = minioFileRepository.save(uploadedFile);
+            lessonBuilder.file(uploadedFile); // Устанавливаем файл в урок
+        }
+
+        Lesson lesson = lessonBuilder.build();
         lessonRepository.save(lesson);
+
+        if (uploadedFile != null) {
+            uploadedFile.setLesson(lesson);
+            minioFileRepository.save(uploadedFile);
+        }
+
         log.info("Lesson '{}' created in module '{}'", lessonName, module.getName());
 
+        // Возвращаем DTO созданного урока
         return LessonDto.builder()
                 .id(lesson.getId())
                 .name(lesson.getName())
@@ -70,6 +85,9 @@ public class LessonServiceImpl implements LessonService {
                 .fileUrl(uploadedFile != null ? uploadedFile.getFileUrl() : null)
                 .build();
     }
+
+
+
 
 
     @Override
@@ -151,17 +169,11 @@ public class LessonServiceImpl implements LessonService {
 
     private MinioFile mapToEntity(MinioFileDto fileDto) {
         MinioFile file = new MinioFile();
-        file.setId(fileDto.getId());
         file.setFileName(fileDto.getFileName());
         file.setFileUrl(fileDto.getFileUrl());
         file.setContentType(fileDto.getContentType());
         file.setSize(fileDto.getSize());
         file.setUploadedAt(fileDto.getUploadedAt());
-        if (fileDto.getUploadedById() != null) {
-            User uploadedBy = new User();
-            uploadedBy.setId(fileDto.getUploadedById());
-            file.setUploadedBy(uploadedBy);
-        }
         return file;
     }
 

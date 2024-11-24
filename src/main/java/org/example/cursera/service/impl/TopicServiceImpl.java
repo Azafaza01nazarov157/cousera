@@ -2,22 +2,25 @@ package org.example.cursera.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.cursera.domain.dtos.GetTopicDto;
-import org.example.cursera.domain.dtos.TopicDto;
-import org.example.cursera.domain.dtos.TestDto;
+import org.example.cursera.domain.dtos.*;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
 import org.example.cursera.domain.entity.Lesson;
+import org.example.cursera.domain.entity.MinioFile;
 import org.example.cursera.domain.entity.Test;
 import org.example.cursera.domain.entity.Topic;
 import org.example.cursera.domain.repository.LessonRepository;
+import org.example.cursera.domain.repository.MinioFileRepository;
 import org.example.cursera.domain.repository.TopicRepository;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.TopicService;
+import org.example.cursera.service.minio.MinioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -27,6 +30,8 @@ public class TopicServiceImpl implements TopicService {
 
     private final TopicRepository topicRepository;
     private final LessonRepository lessonRepository;
+    private final MinioService minioService;
+    private final MinioFileRepository minioFileRepository;
 
     private List<TestDto> mapTestsToTestDtos(List<Test> tests) {
         return tests.stream().map(test -> TestDto.builder()
@@ -52,9 +57,16 @@ public class TopicServiceImpl implements TopicService {
                         .title(topic.getTitle())
                         .lessonName(lesson.getName())
                         .tests(mapTestsToTestDtos(topic.getTests()))
+                        .files(topic.getFiles().stream()
+                                .map(file -> FileDto.builder()
+                                        .fileUrl(file.getFileUrl())
+                                        .contentType(file.getContentType())
+                                        .build())
+                                .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
     }
+
 
 
     @Override
@@ -70,7 +82,7 @@ public class TopicServiceImpl implements TopicService {
     }
 
     @Override
-    public void createTopic(String name, String description, String title, Long lessonId) {
+    public void createTopicWithFiles(String name, String description, String title, Long lessonId, List<MultipartFile> files) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found.")));
 
@@ -85,8 +97,19 @@ public class TopicServiceImpl implements TopicService {
                 .lesson(lesson)
                 .build();
 
-        topicRepository.save(topic);
-        log.info("Topic '{}' created for lesson '{}'", name, lesson.getId());
+        Topic savedTopic = topicRepository.save(topic);
+
+        if (files != null && !files.isEmpty()) {
+            files.forEach(file -> {
+                MinioFileDto uploadedFile = minioService.uploadFile(file, "topics/" + savedTopic.getId());
+
+                MinioFile minioFile = mapToEntity(uploadedFile);
+                minioFile.setTopic(savedTopic);
+                minioFileRepository.save(minioFile);
+            });
+        }
+
+        log.info("Topic '{}' with files created for lesson '{}'", name, lesson.getId());
     }
 
 
@@ -128,4 +151,15 @@ public class TopicServiceImpl implements TopicService {
         topicRepository.delete(topic);
         log.info("Topic with ID '{}' has been deleted", topicId);
     }
+
+    private MinioFile mapToEntity(MinioFileDto fileDto) {
+        MinioFile file = new MinioFile();
+        file.setFileName(fileDto.getFileName());
+        file.setFileUrl(fileDto.getFileUrl());
+        file.setContentType(fileDto.getContentType());
+        file.setSize(fileDto.getSize());
+        file.setUploadedAt(fileDto.getUploadedAt());
+        return file;
+    }
+
 }

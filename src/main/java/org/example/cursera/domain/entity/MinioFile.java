@@ -33,4 +33,12 @@ public class MinioFile {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
     private User uploadedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "lesson_id", nullable = true)
+    private Lesson lesson;
+
+    @ManyToOne
+    @JoinColumn(name = "topic_id", nullable = false)
+    private Topic topic;
 }

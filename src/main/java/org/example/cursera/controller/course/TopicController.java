@@ -11,6 +11,7 @@ import org.example.cursera.service.course.TopicService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -51,14 +52,15 @@ public class TopicController {
             @ApiResponse(responseCode = "404", description = "Урок не найден")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = {"multipart/form-data"})
     public ResponseEntity<Void> createTopic(
             @Parameter(description = "Название темы") @RequestParam String name,
             @Parameter(description = "Описание темы") @RequestParam(required = false) String description,
             @Parameter(description = "Заголовок темы") @RequestParam(required = false) String title,
-            @Parameter(description = "ID урока") @RequestParam Long lessonId) {
+            @Parameter(description = "ID урока") @RequestParam Long lessonId,
+            @Parameter(description = "Файлы (картинки/видео)") @RequestPart(required = false) List<MultipartFile> files) {
 
-        topicService.createTopic(name, description, title, lessonId);
+        topicService.createTopicWithFiles(name, description, title, lessonId, files);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

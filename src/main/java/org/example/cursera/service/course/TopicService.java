@@ -2,6 +2,7 @@ package org.example.cursera.service.course;
 
 import org.example.cursera.domain.dtos.GetTopicDto;
 import org.example.cursera.domain.dtos.TopicDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public interface TopicService {
      * @param name     The name of the new topic.
      * @param lessonId The ID of the lesson to associate the topic with.
      */
-    void createTopic(String name, String description, String title, Long lessonId);
+    void createTopicWithFiles(String name, String description, String title, Long lessonId, List<MultipartFile> files);
 
     /**
      * Retrieve a topic by its unique ID.
