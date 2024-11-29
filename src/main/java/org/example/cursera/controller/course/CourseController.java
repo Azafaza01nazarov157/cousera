@@ -19,6 +19,7 @@ import org.example.cursera.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -79,9 +80,14 @@ public class CourseController {
             @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
     @CrossOrigin(origins = "${application.cors.allowed-origins-base}")
-    @PostMapping
-    public ResponseEntity<String> createCourse(@RequestBody CreateCourseDto courseDto) {
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<String> createCourse(
+            @Parameter(description = "Course details") @ModelAttribute CreateCourseDto courseDto,
+            @Parameter(description = "Image file") @RequestPart("image") MultipartFile image
+    ) {
         try {
+            courseDto.setImage(image);
+
             courseService.createCourse(courseDto);
             return ResponseEntity.status(HttpStatus.CREATED).body("Course created successfully");
         } catch (ForbiddenException e) {

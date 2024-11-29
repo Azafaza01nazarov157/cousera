@@ -3,19 +3,15 @@ package org.example.cursera.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.cursera.domain.dtos.*;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
-import org.example.cursera.domain.entity.Course;
+import org.example.cursera.domain.entity.*;
 import org.example.cursera.domain.entity.Module;
-import org.example.cursera.domain.entity.SubscriptionRequest;
-import org.example.cursera.domain.entity.User;
 import org.example.cursera.domain.enums.RequestStatus;
 import org.example.cursera.domain.enums.Role;
-import org.example.cursera.domain.repository.CourseRepository;
-import org.example.cursera.domain.repository.ModuleRepository;
-import org.example.cursera.domain.repository.SubscriptionRequestRepository;
-import org.example.cursera.domain.repository.UserRepository;
+import org.example.cursera.domain.repository.*;
 import org.example.cursera.exeption.ForbiddenException;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.course.CourseService;
+import org.example.cursera.service.minio.MinioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,8 +27,11 @@ public class CourseServiceImpl implements CourseService {
     private final ModuleRepository moduleRepository;
     private final UserRepository userRepository;
     private final SubscriptionRequestRepository subscriptionRequestRepository;
+    private final MinioService minioService;
+    private final MinioFileRepository minioFileRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<GetCourseDto> findAll() {
         return courseRepository.findAll().stream()
                 .map(this::convertToDto)
@@ -62,6 +61,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Transactional
     public void createCourse(CreateCourseDto course) {
         if (course == null) {
             throw new NotFoundException(new ErrorDto("404", "Course not found"));
@@ -74,7 +74,7 @@ public class CourseServiceImpl implements CourseService {
             throw new ForbiddenException(new ErrorDto("403", "Forbidden! You don't have enough rights"));
         }
 
-        Course courseBuilder = Course.builder()
+        Course courseEntity = Course.builder()
                 .name(course.getName())
                 .moderatorId(course.getModeratorId())
                 .companyName(course.getCompanyName())
@@ -84,7 +84,25 @@ public class CourseServiceImpl implements CourseService {
                 .subscribers(new ArrayList<>())
                 .build();
 
-        courseRepository.save(courseBuilder);
+        Course savedCourse = courseRepository.save(courseEntity);
+
+        if (course.getImage() != null && !course.getImage().isEmpty()) {
+            MinioFileDto uploadedFile = minioService.uploadFile(course.getImage(), "courses/" + savedCourse.getId());
+
+            MinioFile minioFile = MinioFile.builder()
+                    .fileName(uploadedFile.getFileName())
+                    .fileUrl(uploadedFile.getFileUrl())
+                    .contentType(uploadedFile.getContentType())
+                    .size(uploadedFile.getSize())
+                    .uploadedAt(uploadedFile.getUploadedAt())
+                    .course(savedCourse)
+                    .build();
+
+            MinioFile savedFile = minioFileRepository.save(minioFile);
+
+            savedCourse.setImage(savedFile);
+            courseRepository.save(savedCourse);
+        }
     }
 
     private GetCourseDto convertToDto(Course course) {
@@ -107,6 +125,7 @@ public class CourseServiceImpl implements CourseService {
                             .build();
                 })
                 .collect(Collectors.toList());
+        String imageUrl = course.getImage() != null ? course.getImage().getFileUrl() : null;
 
         return GetCourseDto.builder()
                 .id(course.getId())
@@ -116,6 +135,7 @@ public class CourseServiceImpl implements CourseService {
                 .createAt(course.getCreateAt())
                 .moderatorId(course.getModeratorId())
                 .modules(modules)
+                .image(imageUrl)
                 .build();
     }
 
@@ -195,6 +215,7 @@ public class CourseServiceImpl implements CourseService {
                 .companyName(course.getCompanyName())
                 .createAt(course.getCreateAt())
                 .moderatorId(course.getModeratorId())
+                .image(course.getImage().getFileUrl())
                 .build();
     }
 

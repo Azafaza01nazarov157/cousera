@@ -1,6 +1,8 @@
 package org.example.cursera.domain.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -12,4 +14,6 @@ public class CreateCourseDto {
     private String description;
     private String companyName;
     private Long moderatorId;
+    @JsonIgnore
+    private MultipartFile image;
 }

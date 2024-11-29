@@ -38,7 +38,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     @Transactional
     public LessonDto createLesson(Long moduleId, String lessonName, String lessonDescription, String level, MultipartFile file) {
-        // Проверяем существование модуля
+
         Module module = moduleRepository.findById(moduleId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Module with ID " + moduleId + " not found")));
 
@@ -46,22 +46,20 @@ public class LessonServiceImpl implements LessonService {
 
         MinioFile uploadedFile = null;
 
-        // Создаем урок
+
         Lesson.LessonBuilder lessonBuilder = Lesson.builder()
                 .name(lessonName)
                 .description(lessonDescription)
                 .module(module)
                 .level(level)
-                .topics(Collections.emptyList()); // Создаем пустой список тем
+                .topics(Collections.emptyList());
 
-        // Если файл загружен, загружаем его в MinIO и сохраняем данные
         if (file != null && !file.isEmpty()) {
             MinioFileDto fileDto = minioService.uploadFile(file, "lessons/" + moduleId + "/files");
             uploadedFile = mapToEntity(fileDto);
 
-            // Сохраняем данные о файле для урока
             uploadedFile = minioFileRepository.save(uploadedFile);
-            lessonBuilder.file(uploadedFile); // Устанавливаем файл в урок
+            lessonBuilder.file(uploadedFile);
         }
 
         Lesson lesson = lessonBuilder.build();
@@ -74,7 +72,7 @@ public class LessonServiceImpl implements LessonService {
 
         log.info("Lesson '{}' created in module '{}'", lessonName, module.getName());
 
-        // Возвращаем DTO созданного урока
+
         return LessonDto.builder()
                 .id(lesson.getId())
                 .name(lesson.getName())

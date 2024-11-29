@@ -22,4 +22,6 @@ public class CourseDto {
     private LocalDate createAt;
 
     private Long moderatorId;
+
+    private String image;
 }

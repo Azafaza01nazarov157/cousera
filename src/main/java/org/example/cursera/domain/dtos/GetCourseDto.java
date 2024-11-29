@@ -24,4 +24,6 @@ public class GetCourseDto {
     private Long moderatorId;
 
     private List<ModuleDto> modules;
+
+    private String image;
 }

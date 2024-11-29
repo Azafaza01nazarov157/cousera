@@ -1,8 +1,7 @@
 package org.example.cursera.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +9,9 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "minio_files")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MinioFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,4 +43,8 @@ public class MinioFile {
     @ManyToOne
     @JoinColumn(name = "topic_id", nullable = false)
     private Topic topic;
+
+    @OneToOne
+    @JoinColumn(name = "course_id", referencedColumnName = "id")
+    private Course course;
 }
