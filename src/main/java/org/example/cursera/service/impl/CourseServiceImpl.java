@@ -1,6 +1,7 @@
 package org.example.cursera.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.cursera.domain.dtos.*;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
 import org.example.cursera.domain.entity.*;
@@ -14,12 +15,16 @@ import org.example.cursera.service.course.CourseService;
 import org.example.cursera.service.minio.MinioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.w3c.dom.ranges.RangeException;
 
+import javax.swing.text.BadLocationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
@@ -33,7 +38,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional(readOnly = true)
     public List<GetCourseDto> findAll() {
-        return courseRepository.findAll().stream()
+        return courseRepository.findAllWithImages().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -193,12 +198,17 @@ public class CourseServiceImpl implements CourseService {
     }
 
 
-    public List<CourseDto> getSubscribedCourses(final User user) {
-        return subscriptionRequestRepository.findByUserAndStatus(user, RequestStatus.APPROVED)
-                .stream()
-                .map(SubscriptionRequest::getCourse)
-                .map(this::mapToCourseDto)
-                .collect(Collectors.toList());
+    public List<CourseDto> getSubscribedCourses(final User user) throws RangeException {
+        try {
+            return subscriptionRequestRepository.findByUserAndStatus(user, RequestStatus.APPROVED)
+                    .stream()
+                    .map(SubscriptionRequest::getCourse)
+                    .map(this::mapToCourseDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching subscribed courses", e);
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -208,6 +218,8 @@ public class CourseServiceImpl implements CourseService {
      * @return The mapped CourseDto.
      */
     private CourseDto mapToCourseDto(final Course course) {
+        String imageUrl = course.getImage() != null ? course.getImage().getFileUrl() : null;
+
         return CourseDto.builder()
                 .id(course.getId())
                 .name(course.getName())
@@ -215,7 +227,7 @@ public class CourseServiceImpl implements CourseService {
                 .companyName(course.getCompanyName())
                 .createAt(course.getCreateAt())
                 .moderatorId(course.getModeratorId())
-                .image(course.getImage().getFileUrl())
+                .image(imageUrl)
                 .build();
     }
 
