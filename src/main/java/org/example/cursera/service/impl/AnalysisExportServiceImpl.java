@@ -1,17 +1,21 @@
 package org.example.cursera.service.impl;
 
+import ch.qos.logback.core.model.Model;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.cursera.domain.dtos.CourseStatisticsDto;
 import org.example.cursera.domain.dtos.errors.ErrorDto;
-import org.example.cursera.domain.entity.Course;
-import org.example.cursera.domain.entity.User;
+import org.example.cursera.domain.entity.*;
+import org.example.cursera.domain.entity.Module;
 import org.example.cursera.domain.repository.CourseRepository;
 import org.example.cursera.exeption.NotFoundException;
 import org.example.cursera.service.analysis.AnalysisExportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,12 +27,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AnalysisExportServiceImpl implements AnalysisExportService {
 
+    private static final Logger log = LoggerFactory.getLogger(AnalysisExportServiceImpl.class);
     private final CourseRepository courseRepository;
 
     @Override
+    @Transactional
     public List<CourseStatisticsDto> getSubscribersAnalysis(Long courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Курс с ID " + courseId + " не найден")));
+
+        if (course.getSubscribers() == null) {
+            throw new NotFoundException(new ErrorDto("404", "No subscribers found for course with ID " + courseId));
+        }
 
         return course.getSubscribers().stream()
                 .map(user -> mapToStatisticsDto(user, course))
@@ -116,6 +126,7 @@ public class AnalysisExportServiceImpl implements AnalysisExportService {
         cell6.setCellStyle(style);
     }
 
+
     @Override
     public ByteArrayInputStream exportSubscribersAnalysisFromDatabase(Long courseId) throws IOException {
         return createExcelStream(getSubscribersAnalysis(courseId));
@@ -155,21 +166,23 @@ public class AnalysisExportServiceImpl implements AnalysisExportService {
         }
     }
 
-    private CourseStatisticsDto mapToStatisticsDto(User user, Course course) {
+    @Transactional
+    public CourseStatisticsDto mapToStatisticsDto(User user, Course course) {
         int totalLessons = course.getModules().stream()
                 .flatMap(module -> module.getLessons().stream())
-                .toList()
-                .size();
+                .collect(Collectors.toList()).size();
 
-        int completedLessons = (int) course.getModules().stream()
+        long completedLessonsCount = course.getModules().stream()
                 .flatMap(module -> module.getLessons().stream())
                 .filter(lesson -> lesson.getTopics().stream()
-                        .allMatch(topic -> topic.getTests().stream()
-                                .allMatch(test -> test.getTestResults().stream()
+                        .anyMatch(topic -> topic.getTests().stream()
+                                .anyMatch(test -> test.getTestResults().stream()
                                         .anyMatch(result -> result.getUser().equals(user) && result.isCorrect()))))
                 .count();
 
-        double completionPercentage = totalLessons > 0 ? (completedLessons * 100.0) / totalLessons : 0.0;
+        int remainingLessonsCount = totalLessons - (int) completedLessonsCount;
+
+        double completionPercentage = totalLessons > 0 ? (completedLessonsCount * 100.0) / totalLessons : 0.0;
 
         double averageTestScore = course.getModules().stream()
                 .flatMap(module -> module.getLessons().stream())
@@ -177,7 +190,7 @@ public class AnalysisExportServiceImpl implements AnalysisExportService {
                 .flatMap(topic -> topic.getTests().stream())
                 .flatMap(test -> test.getTestResults().stream())
                 .filter(result -> result.getUser().equals(user))
-                .mapToInt(result -> result.getScore())
+                .mapToInt(TestResult::getScore)
                 .average()
                 .orElse(0.0);
 
@@ -191,9 +204,10 @@ public class AnalysisExportServiceImpl implements AnalysisExportService {
                 .flatMap(module -> module.getLessons().stream())
                 .flatMap(lesson -> lesson.getTopics().stream())
                 .flatMap(topic -> topic.getTests().stream())
-                .flatMap(test -> test.getTestResults().stream())
-                .filter(result -> result.getUser().equals(user) && result.isCorrect())
-                .count();
+                .map(test -> test.getTestResults().stream()
+                        .filter(result -> result.getUser().equals(user) && result.isCorrect())
+                        .count())
+                .reduce(0L, Long::sum);
 
         double testSuccessPercentage = totalTests > 0 ? (successfulTests * 100.0) / totalTests : 0.0;
 
@@ -201,10 +215,12 @@ public class AnalysisExportServiceImpl implements AnalysisExportService {
                 .email(user.getEmail())
                 .courseName(course.getName())
                 .totalLessons(totalLessons)
-                .completedLessons(completedLessons)
+                .completedLessons((int) completedLessonsCount)
+                .remainingLessons(remainingLessonsCount)
                 .completionPercentage(completionPercentage)
                 .averageTestScore(averageTestScore)
                 .testSuccessPercentage(testSuccessPercentage)
+                .subscriptionStatus("Active")
                 .build();
     }
 }
