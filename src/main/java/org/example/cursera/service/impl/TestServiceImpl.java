@@ -27,6 +27,7 @@ public class TestServiceImpl implements TestService {
     private final TestResultRepository testResultRepository;
     private final UserRepository userRepository;
     private final LessonRepository lessonRepository;
+    private final AnalysisRepository analysisRepository;
 
     @Override
     @Transactional
@@ -93,6 +94,7 @@ public class TestServiceImpl implements TestService {
                     .score(score)
                     .percentage(isCorrect ? 100.0 : 0.0)
                     .isCorrect(isCorrect)
+                    .lesson(test.getTopic().getLesson())
                     .build();
 
             testResults.add(testResult);
@@ -106,17 +108,29 @@ public class TestServiceImpl implements TestService {
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Test not found for ID " + submissions.get(0).getTestId())));
         Lesson lesson = test.getTopic().getLesson();
 
-        boolean allTestsCompleted = lesson.getTopics().stream()
-                .flatMap(topic -> topic.getTests().stream())
-                .allMatch(t -> testResultRepository.findByTestAndUserId(t, userId)
-                        .stream().anyMatch(TestResult::isCorrect));
+        if (!lesson.getCompletedByUsers().contains(user)) {
+            lesson.getCompletedByUsers().add(user);
+            lessonRepository.saveAndFlush(lesson);
+            log.info("User with ID '{}' has completed lesson '{}'", userId, lesson.getName());
+        }
 
-        if (allTestsCompleted) {
-            if (!lesson.getCompletedByUsers().contains(user)) {
-                lesson.getCompletedByUsers().add(user);
-                lessonRepository.saveAndFlush(lesson);
-                log.info("User with ID '{}' has completed lesson '{}'", userId, lesson.getName());
-            }
+        Topic topic = test.getTopic();
+        Lesson lessonTest = topic.getLesson();
+        Course course = lessonTest.getModule().getCourse();
+
+        Analysis existingAnalysis = analysisRepository.findByUserAndCourseAndLesson(user, course, lesson);
+
+        if (existingAnalysis != null) {
+            existingAnalysis.setEventType("COMPLETED");
+            analysisRepository.save(existingAnalysis);
+        } else {
+            Analysis analysis = new Analysis();
+            analysis.setUser(user);
+            analysis.setCourse(course);
+            analysis.setLesson(lesson);
+            analysis.setEventType("COMPLETED");
+
+            analysisRepository.save(analysis);
         }
         log.info("User with ID '{}' took multiple tests and scored '{}' out of '{}'", userId, totalCorrect, totalQuestions);
 
@@ -138,7 +152,7 @@ public class TestServiceImpl implements TestService {
                 .userId(userId)
                 .score(result.getScore())
                 .percentage(result.getPercentage())
-                .isCorrect(result.getScore() > 0) // Assuming score > 0 indicates a correct answer
+                .isCorrect(result.getScore() > 0)
                 .build()
         ).collect(Collectors.toList());
     }

@@ -21,4 +21,7 @@ public interface TestResultRepository extends JpaRepository<TestResult, Long> {
 
     @Query("SELECT tr FROM TestResult tr WHERE tr.user.id = :userId AND tr.lesson.module.course.id = :courseId")
     List<TestResult> findByUserIdAndCourseId(@Param("userId") Long userId, @Param("courseId") Long courseId);
+
+    @Query("SELECT tr FROM TestResult tr WHERE tr.user.id = :userId AND tr.lesson.module.course.id = :courseId")
+    List<TestResult> findTestResultsByUserAndCourse(Long userId, Long courseId);
 }
