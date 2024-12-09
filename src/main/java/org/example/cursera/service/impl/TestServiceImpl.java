@@ -159,6 +159,7 @@ public class TestServiceImpl implements TestService {
 
 
     @Override
+    @Transactional
     public LessonTestResultsSummaryDto getTestResultsSummaryByLessonAndUserId(Long lessonId, Long userId) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new NotFoundException(new ErrorDto("404", "Lesson with ID " + lessonId + " not found")));

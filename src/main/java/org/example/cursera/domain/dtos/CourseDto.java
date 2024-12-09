@@ -3,6 +3,7 @@ package org.example.cursera.domain.dtos;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -19,7 +20,7 @@ public class CourseDto {
 
     private String companyName;
 
-    private LocalDate createAt;
+    private LocalDateTime createAt;
 
     private Long moderatorId;
 

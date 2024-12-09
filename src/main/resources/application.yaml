@@ -71,3 +71,5 @@ minio:
     name: cousera
   file-size: 1073741824
 
+certificate:
+  path: src\main\resources\templates

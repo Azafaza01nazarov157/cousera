@@ -19,6 +19,8 @@ import org.w3c.dom.ranges.RangeException;
 
 import javax.swing.text.BadLocationException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -84,7 +86,7 @@ public class CourseServiceImpl implements CourseService {
                 .moderatorId(course.getModeratorId())
                 .companyName(course.getCompanyName())
                 .description(course.getDescription())
-                .createAt(LocalDate.now())
+                .createAt(LocalDateTime.now())
                 .modules(new ArrayList<>())
                 .subscribers(new ArrayList<>())
                 .build();
@@ -118,7 +120,7 @@ public class CourseServiceImpl implements CourseService {
                             .name(module.getCourse().getName())
                             .description(module.getCourse().getDescription())
                             .companyName(module.getCourse().getCompanyName())
-                            .createAt(module.getCourse().getCreateAt())
+                            .createAt(formatDateTime(module.getCourse().getCreateAt())) // This will now contain both date and time
                             .moderatorId(module.getCourse().getModeratorId())
                             .build();
 
@@ -130,6 +132,7 @@ public class CourseServiceImpl implements CourseService {
                             .build();
                 })
                 .collect(Collectors.toList());
+
         String imageUrl = course.getImage() != null ? course.getImage().getFileUrl() : null;
 
         return GetCourseDto.builder()
@@ -137,7 +140,7 @@ public class CourseServiceImpl implements CourseService {
                 .name(course.getName())
                 .description(course.getDescription())
                 .companyName(course.getCompanyName())
-                .createAt(course.getCreateAt())
+                .createAt(formatDateTime(course.getCreateAt()))
                 .moderatorId(course.getModeratorId())
                 .modules(modules)
                 .image(imageUrl)
@@ -197,6 +200,10 @@ public class CourseServiceImpl implements CourseService {
                 .build();
     }
 
+    public String formatDateTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return dateTime.format(formatter);
+    }
 
     public List<CourseDto> getSubscribedCourses(final User user) throws RangeException {
         try {

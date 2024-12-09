@@ -22,6 +22,8 @@ import org.example.cursera.service.user.ModeratorService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -92,12 +94,15 @@ public class ModeratorServiceImpl implements ModeratorService {
                 .name(course.getName())
                 .description(course.getDescription())
                 .companyName(course.getCompanyName())
-                .createAt(course.getCreateAt())
+                .createAt(formatDateTime(course.getCreateAt()))
                 .moderatorId(course.getModeratorId())
                 .modules(modules)
                 .build();
     }
-
+    public String formatDateTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return dateTime.format(formatter);
+    }
     @Override
     public List<SubscriberDto> getAllSubscribers(Long courseId) {
         val course = courseRepository.findById(courseId)

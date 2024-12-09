@@ -2,8 +2,11 @@ package org.example.cursera.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -25,9 +28,11 @@ public class Course {
 
     private String companyName;
 
-    private LocalDate createAt;
+    @CreationTimestamp
+    private LocalDateTime createAt;
 
-    private LocalDate updateAt;
+    @UpdateTimestamp
+    private LocalDateTime  updateAt;
 
     @ManyToMany
     @JoinTable(
