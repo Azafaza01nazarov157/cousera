@@ -86,6 +86,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
             return CourseStatisticsDto.builder()
                     .email(user.getEmail())
+                    .courseId(course.getId())
                     .courseName(course.getName())
                     .totalLessons(totalLessons)
                     .completedLessons(completedCount)
